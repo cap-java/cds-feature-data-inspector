@@ -1,0 +1,26 @@
+version: 2
+updates:
+  - package-ecosystem: maven
+    directories:
+      - "/"
+      - "/tests/bookshop"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    ignore:
+    - dependency-name:  com.sap.cds:*
+      versions:
+      - ">=4"
+
+  - package-ecosystem: npm
+    directories:
+      - "/"
+      - "/tests/bookshop"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: daily

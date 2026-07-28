@@ -1,0 +1,38 @@
+name: 'Test Plugin and Sample'
+description: 'Tests emoji plugin, bookshop, and integration tests'
+inputs:
+  java-version:
+    description: 'Java version to use'
+    required: false
+    default: '21'
+  node-version:
+    description: 'Node.js version to use'
+    required: false
+    default: '22'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: ${{ inputs.java-version }}
+        cache: maven
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: 'npm'
+
+    - name: Build, Install and Test Emoji Plugin
+      shell: bash
+      run: |
+        mvn clean install -B -V
+
+    - name: Test Bookshop App (Integration Tests)
+      shell: bash
+      working-directory: samples/bookshop
+      run: |
+        mvn test -B -V

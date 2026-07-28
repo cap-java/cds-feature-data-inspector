@@ -1,0 +1,44 @@
+name: 'Build Plugin and Sample'
+description: 'Builds emoji plugin, installs it, builds incident app, validates integration tests syntax'
+inputs:
+  java-version:
+    description: 'Java version to use'
+    required: false
+    default: '21'
+  node-version:
+    description: 'Node.js version to use'
+    required: false
+    default: '22'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: ${{ inputs.java-version }}
+        cache: maven
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: 'npm'
+
+    - name: Build and Install Emoji Plugin
+      shell: bash
+      run: |
+        mvn clean install -DskipTests=true -B -V
+
+    - name: Build Incident App (with test compilation)
+      shell: bash
+      working-directory: tests/incident-app
+      run: |
+        mvn clean compile test-compile -B -V
+
+    - name: Validate Integration Tests Syntax
+      shell: bash
+      working-directory: tests/integration-tests
+      run: |
+        mvn compile test-compile -DskipTests=true -B -V

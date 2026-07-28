@@ -1,0 +1,63 @@
+name: CI - PR
+
+permissions:
+  actions: read
+  contents: read
+  packages: read
+  security-events: write
+
+env:
+  MAVEN_VERSION: '3.9.15'
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    types: [reopened, synchronize, opened]
+
+jobs:
+  blackduck:
+    name: Blackduck Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Scan With Black Duck
+        uses: cap-java/.github/actions/scan-with-blackduck@296573b55e906f5c77a1855bcfe4285cbbc5cac4 # main
+        with:
+          blackduck_token: ${{ secrets.BLACK_DUCK_TOKEN }}
+          maven-version: ${{ env.MAVEN_VERSION }}
+          project-name: sap.capire.plugin-template-emoji-parent
+          included-modules: srv
+          # scan_mode and rapid_compare_mode determine the type of scan to perform
+          # RAPID scan on a PR + rapid_compare_mode: BOM_COMPARE will only tag issues introduced by the PR
+          # not pre-existing issues that could have appeared in the main branch in the meantime
+          # Set to RAPID without BOM_COMPARE since this is a template.
+          # Add rapid_compare_mode: BOM_COMPARE when you have a BlackDuck token available for your project.
+          scan_mode: RAPID
+          #rapid_compare_mode: BOM_COMPARE
+
+  codeql:
+    name: CodeQL Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+      packages: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Scan With CodeQL
+        uses: cap-java/.github/actions/scan-with-codeql@296573b55e906f5c77a1855bcfe4285cbbc5cac4 # main
+        with:
+          maven-version: ${{ env.MAVEN_VERSION }}
+          java-version: '17'
+          language: java-kotlin
+          queries: security-extended

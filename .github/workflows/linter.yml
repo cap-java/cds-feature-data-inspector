@@ -1,0 +1,19 @@
+name: Linting
+
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Run Checkstyle
+        # This command will automatically fail the build if style issues are found
+        # because of the <failsOnError>true</failsOnError> config in the pom.xml
+        run: mvn checkstyle:check

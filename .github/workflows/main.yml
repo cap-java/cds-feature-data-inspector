@@ -1,0 +1,55 @@
+name: CI - MAIN
+
+env:
+  MAVEN_VERSION: '3.9.15'
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  blackduck:
+    name: Blackduck Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Scan With Black Duck
+        uses: cap-java/.github/actions/scan-with-blackduck@296573b55e906f5c77a1855bcfe4285cbbc5cac4 # main
+        with:
+          blackduck_token: ${{ secrets.BLACK_DUCK_TOKEN }}
+          maven-version: ${{ env.MAVEN_VERSION }}
+          project-name: sap.capire.plugin-template-emoji-parent
+          included-modules: srv
+          # scan_mode and rapid_compare_mode determine the type of scan to perform
+          # A FULL scan on main is recommended
+          # Set to RAPID since this is a template. Change to FULL when you have a BlackDuck token available for your project.
+          #scan_mode: 'FULL'
+          scan_mode: 'RAPID'
+          
+
+  codeql:
+    name: CodeQL Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+      packages: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Scan With CodeQL
+        uses: cap-java/.github/actions/scan-with-codeql@296573b55e906f5c77a1855bcfe4285cbbc5cac4 # main
+        with:
+          maven-version: ${{ env.MAVEN_VERSION }}
+          java-version: '17'
+          language: java-kotlin
+          queries: security-extended

@@ -1,0 +1,26 @@
+name: Test CAP Projects
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java-version: [17, 21]
+    name: Test (Java ${{ matrix.java-version }})
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Test CAP Projects
+      uses: ./.github/actions/test
+      with:
+        java-version: ${{ matrix.java-version }}
+        node-version: '22'
