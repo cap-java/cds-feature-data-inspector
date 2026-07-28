@@ -9,7 +9,7 @@
     "prettier:check": "cds format --check"
   },
   "devDependencies": {
-    "@sap/cds-dk": "^9.3.2",
+    "@sap/cds-dk": "^10.0.6",
     "@sap/eslint-plugin-cds": "^4",
     "eslint": "^9"
   }
