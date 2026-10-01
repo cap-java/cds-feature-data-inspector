@@ -24,19 +24,27 @@
         "do_not_enforce_on_create": false,
         "required_status_checks": [
           {
-            "context": "build / build-and-run",
+            "context": "build-and-test / Tests (Java 21)",
             "integration_id": 15368
           },
           {
-            "context": "lint",
+            "context": "build-and-test / Tests (Java 25)",
             "integration_id": 15368
           },
           {
-            "context": "test (20.x)",
+            "context": "build-and-test / SonarQube Scan",
             "integration_id": 15368
           },
           {
-            "context": "test (22.x)",
+            "context": "build-and-test / CodeQL Scan",
+            "integration_id": 15368
+          },
+          {
+            "context": "build-and-test / Blackduck Scan",
+            "integration_id": 15368
+          },
+          {
+            "context": "build-and-test / Spotless Check",
             "integration_id": 15368
           }
         ]
