@@ -3,24 +3,48 @@ updates:
   - package-ecosystem: maven
     directories:
       - "/"
-      - "/tests/bookshop"
     schedule:
-      interval: daily
+      interval: weekly
     open-pull-requests-limit: 10
-    ignore:
-    - dependency-name:  com.sap.cds:*
-      versions:
-      - ">=4"
+    cooldown:
+      default-days: 7
+    labels:
+      - "no changelog"
+    groups:
+      minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
 
   - package-ecosystem: npm
     directories:
       - "/"
-      - "/tests/bookshop"
     schedule:
-      interval: daily
+      interval: weekly
     open-pull-requests-limit: 10
+    cooldown:
+      default-days: 7
+    labels:
+      - "no changelog"
+    groups:
+      minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
 
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: daily
+      interval: weekly
+    cooldown:
+      default-days: 7
+    labels:
+      - "no changelog"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
