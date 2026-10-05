@@ -45,34 +45,24 @@
   </scm>
 
   <properties>
-    <!--
-            This is the ONE artifact that gets published. The root POM sets
-            maven.deploy.skip=true for all modules; re-enable it here so `mvn deploy`
-            publishes only this plugin JAR (+ its flattened POM).
-        -->
+    <!-- The ONLY published module: override the root's maven.deploy.skip=true. -->
     <maven.deploy.skip>false</maven.deploy.skip>
   </properties>
 
   <dependencies>
-    <!-- Core CAP Java runtime API (EventHandler, @ServiceName, @On, CqnService, CdsRuntime, CdsModel reflection, CQL). -->
+    <!-- Core CAP Java runtime API. Also provides slf4j-api transitively (not declared here). -->
     <dependency>
       <groupId>com.sap.cds</groupId>
       <artifactId>cds-services-api</artifactId>
     </dependency>
 
-    <!--
-            Serialises java.time.* as ISO-8601 in the 'record' JSON (JavaTimeModule);
-            transitively provides jackson-databind/-core. Pinned to the jackson line CAP
-            uses (cds-services-bom does not manage this datatype module). slf4j-api is NOT
-            declared here — it is provided transitively by cds-services-api (CAP).
-        -->
+    <!-- JavaTimeModule for ISO-8601 java.time.* in the 'record' JSON. Explicit version: not managed by cds-services-bom. -->
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
       <version>${jackson.jsr310.version}</version>
     </dependency>
 
-    <!-- Test: JUnit 5 (version from junit-bom) + AssertJ for RFilterParserTest. -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
@@ -85,7 +75,7 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- Test: CQL runtime to initialise com.sap.cds.ql.CQL in RFilterParserTest (not managed by cds-services-bom). -->
+    <!-- Initialises com.sap.cds.ql.CQL in RFilterParserTest; not managed by cds-services-bom. -->
     <dependency>
       <groupId>com.sap.cds</groupId>
       <artifactId>cds4j-runtime</artifactId>
@@ -95,15 +85,9 @@
   </dependencies>
 
   <build>
-    <!-- Stable artifact name for the plugin JAR (consumers reference by artifactId). -->
     <finalName>${project.artifactId}</finalName>
     <plugins>
-      <!--
-                Compiles the plugin's own CDS model: install-node + npm ci (installs
-                @sap/cds-dk) → cds build (*.cds → CSN/EDMX) → generate (Java accessors).
-                No resolve/deploy — the plugin has no external CDS deps and no DB schema
-                (its entities are @cds.persistence.skip, served by @On handlers).
-            -->
+      <!-- Compiles the plugin's own CDS model. No resolve/deploy: no external CDS deps, entities are @cds.persistence.skip (served by @On handlers). -->
       <plugin>
         <groupId>com.sap.cds</groupId>
         <artifactId>cds-maven-plugin</artifactId>
@@ -149,7 +133,7 @@
         </executions>
       </plugin>
 
-      <!-- JaCoCo: record unit-test coverage (RFilterParserTest) into target/jacoco.exec; merged by the coverage-report module. -->
+      <!-- Unit-test coverage → target/jacoco.exec; merged by the coverage-report module. -->
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>

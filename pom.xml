@@ -76,47 +76,31 @@
     <!-- CDS version — governs cds-services-* and cds-feature-* (and the cds-maven-plugin). -->
     <cds.services.version>5.1.1</cds.services.version>
 
-    <!-- @sap/cds-dk (Node CDS toolchain) version used by the cds-maven-plugin at build time. -->
     <cds.cdsdk.version>10.0.4</cds.cdsdk.version>
 
     <!--
-            Spring Boot version for the spring-boot-maven-plugin (test-app repackage) and
-            the test-app's own spring-boot-dependencies BOM import. Must match the Spring
-            Boot version that cds-services-bom (CAP Java ${cds.services.version}) pulls in
-            transitively — CAP Java 5.1.1 brings Spring Boot 4.1.1 (verify with
-            `mvn dependency:tree` when bumping cds.services.version).
-            NOTE: Spring Boot is intentionally NOT managed in this root POM's
-            dependencyManagement, so it never dictates the published plugin's dependency
-            versions (the plugin's jackson/slf4j come from CAP). The BOM is imported only
-            in test-app/pom.xml, where a real Spring Boot app needs it.
+            Must match the Spring Boot version CAP Java ${cds.services.version} pulls in
+            transitively (verify with `mvn dependency:tree` on a bump). Imported only by
+            test-app — kept out of root dependencyManagement so it never dictates the
+            published plugin's dependency versions.
         -->
     <spring.boot.version>4.1.1</spring.boot.version>
 
-    <!-- JUnit 5 BOM — manages junit-jupiter for the plugin module's unit tests. -->
     <junit.bom.version>6.1.3</junit.bom.version>
 
-    <!-- AssertJ — plugin unit tests (not managed by cds-services-bom). -->
+    <!-- Not managed by cds-services-bom; pinned explicitly. -->
     <assertj.version>3.27.3</assertj.version>
 
-    <!--
-            jackson-datatype-jsr310 for the plugin's JavaTimeModule. Not managed by
-            cds-services-bom, so pinned explicitly. Keep aligned with the jackson version
-            CAP ships (CAP Java ${cds.services.version} uses jackson 2.22.x) to avoid a
-            split-version classpath at runtime.
-        -->
+    <!-- Not managed by cds-services-bom; keep aligned with CAP's jackson line to avoid a split-version classpath. -->
     <jackson.jsr310.version>2.22.2</jackson.jsr310.version>
 
     <!-- Skip Spotless `check` in normal builds; run `mvn spotless:apply`/`:check` on demand. -->
     <spotless.check.skip>true</spotless.check.skip>
 
-    <!--
-            Publishing policy: skip `deploy` for ALL modules by default; the plugin
-            module overrides this to false so only it is published.
-        -->
+    <!-- Skip deploy for ALL modules by default; the plugin module overrides to false so only it is published. -->
     <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
 
-  <!-- Pins library versions for all modules (children declare dependencies without <version>). -->
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -126,7 +110,7 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      <!-- JUnit 5 BOM for the plugin module's unit tests (Spring Boot BOM is intentionally NOT imported here). -->
+      <!-- Spring Boot BOM is intentionally NOT imported here — see spring.boot.version note. -->
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
@@ -163,13 +147,12 @@
           <artifactId>maven-enforcer-plugin</artifactId>
           <version>3.5.0</version>
         </plugin>
-        <!-- Pin the deploy plugin version (it runs for the published plugin module). -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
           <version>3.1.4</version>
         </plugin>
-        <!-- Release tooling (used by the deploy-release profile for Maven Central). -->
+        <!-- Source/javadoc/gpg/central-publishing: used by the deploy-release profile. -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-source-plugin</artifactId>
@@ -201,13 +184,12 @@
           <artifactId>spring-boot-maven-plugin</artifactId>
           <version>${spring.boot.version}</version>
         </plugin>
-        <!-- Compiles *.cds → EDMX + Java accessors. Version must match cds.services.version. -->
+        <!-- Compiles *.cds → EDMX + Java accessors; version must match cds.services.version. -->
         <plugin>
           <groupId>com.sap.cds</groupId>
           <artifactId>cds-maven-plugin</artifactId>
           <version>${cds.services.version}</version>
         </plugin>
-        <!-- Code coverage; wired up per-module (see plugin/test-app/coverage-report). -->
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
@@ -217,7 +199,7 @@
     </pluginManagement>
 
     <plugins>
-      <!-- CI-friendly ${revision} → real version in the published POM. -->
+      <!-- Resolves ${revision} to a concrete version in the published POM. -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>flatten-maven-plugin</artifactId>
@@ -267,7 +249,7 @@
         </executions>
       </plugin>
 
-      <!-- Code format (Google Java Format) + license headers + pom sorting. `mvn spotless:apply` to fix, `:check` to verify. -->
+      <!-- `mvn spotless:apply` to fix formatting, `:check` to verify. -->
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
@@ -304,11 +286,9 @@
 
   <profiles>
     <!--
-            Release profile for publishing to Maven Central via the Sonatype Central
-            Portal. Activate with `-Pdeploy-release` on `mvn deploy`. Attaches sources
-            and javadoc jars, GPG-signs all artifacts, and uploads via the
-            central-publishing plugin. Only the plugin module is published — the
-            aggregator, test-app and coverage-report are excluded.
+            Maven Central release (`mvn deploy -Pdeploy-release`): attach sources+javadoc,
+            GPG-sign, publish via central-publishing. excludeArtifacts ensures only the
+            plugin JAR is uploaded (root/test-app/coverage-report are not).
         -->
     <profile>
       <id>deploy-release</id>

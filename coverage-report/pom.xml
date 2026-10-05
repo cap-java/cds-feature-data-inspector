@@ -40,7 +40,7 @@
         </configuration>
       </plugin>
 
-      <!-- Copy the plugin's compiled classes here so jacoco:check has a classes dir to analyse (pom module has none). -->
+      <!-- This pom module has no classes dir; copy the plugin's so jacoco:check can analyse them. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
@@ -95,7 +95,7 @@
             </goals>
             <phase>verify</phase>
             <configuration>
-              <!-- Measure only hand-written plugin code (exclude test-app and CDS-generated accessors). -->
+              <!-- Measure only hand-written plugin code (exclude test-app + CDS-generated accessors). -->
               <excludes>
                 <exclude>com/sap/cds/feature/datainspector/testapp/**/*</exclude>
                 <exclude>com/sap/cds/feature/datainspector/datainspectorservice/**/*</exclude>
@@ -105,7 +105,7 @@
             </configuration>
           </execution>
 
-          <!-- Coverage gate on the plugin classes (fails the build below the thresholds; raise as coverage grows). -->
+          <!-- Coverage gate: fails the build below the thresholds (raise as coverage grows). -->
           <execution>
             <id>jacoco-check</id>
             <goals>

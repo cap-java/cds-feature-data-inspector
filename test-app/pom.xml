@@ -45,13 +45,11 @@
       <version>${project.version}</version>
     </dependency>
 
-    <!-- CAP Java runtime: OData v4 + Spring Boot (pulls in cds-services-impl, jackson, spring-web). -->
     <dependency>
       <groupId>com.sap.cds</groupId>
       <artifactId>cds-starter-spring-boot-odata</artifactId>
     </dependency>
 
-    <!-- SQLite for local dev (version managed by cds-services-bom). -->
     <dependency>
       <groupId>org.xerial</groupId>
       <artifactId>sqlite-jdbc</artifactId>
@@ -61,65 +59,49 @@
       <artifactId>cds-feature-jdbc</artifactId>
     </dependency>
 
-    <!-- HANA client — 'cloud' profile only. -->
+    <!-- 'cloud' profile only. -->
     <dependency>
       <groupId>com.sap.cds</groupId>
       <artifactId>cds-feature-hana</artifactId>
       <scope>runtime</scope>
       <optional>true</optional>
     </dependency>
-
-    <!-- XSUAA — 'cloud' profile only. -->
     <dependency>
       <groupId>com.sap.cds</groupId>
       <artifactId>cds-feature-identity</artifactId>
       <optional>true</optional>
     </dependency>
 
-    <!-- Mock-user / role-based auth for local dev and the IT suite. -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
 
-    <!-- Audit logging (v2); exercised by DataHandlerAuditLogIT. -->
+    <!-- Exercised by DataHandlerAuditLogIT. -->
     <dependency>
       <groupId>com.sap.cds</groupId>
       <artifactId>cds-feature-auditlog-v2</artifactId>
     </dependency>
 
-    <!-- ─────────── Test dependencies (integration tests) ─────────── -->
-
-    <!-- Spring Boot test starter — JUnit 5, AssertJ, MockMvc for the @SpringBootTest IT suite. -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
-
-    <!-- Spring Security test helpers — httpBasic() to authenticate MockMvc requests. -->
     <dependency>
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-test</artifactId>
       <scope>test</scope>
     </dependency>
 
-    <!--
-            NOTE: do NOT declare jackson-databind here. It's already on the runtime
-            classpath transitively; a test-scoped declaration would (via "nearest wins")
-            demote it to test scope and break `spring-boot:run` with NoClassDefFoundError.
-        -->
+    <!-- Do NOT declare jackson-databind here: a test-scoped decl would (nearest-wins) demote the transitive runtime one and break `spring-boot:run`. -->
   </dependencies>
 
   <build>
     <finalName>cds-feature-data-inspector-test-app</finalName>
 
     <plugins>
-      <!--
-                Spring Boot fat-jar packaging. classifier=exec keeps the thin jar as the
-                primary artifact (needed by failsafe's test classpath) and writes the fat
-                jar as `…-exec.jar`; without it, `repackage` breaks `mvn verify`.
-            -->
+      <!-- classifier=exec keeps the thin jar as the primary artifact (failsafe's test classpath); the fat jar becomes `…-exec.jar`. Without it, repackage breaks `mvn verify`. -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
@@ -135,12 +117,7 @@
         </executions>
       </plugin>
 
-      <!--
-                CDS build lifecycle: install-node + npm ci (installs @sap/cds-dk) →
-                resolve (pulls the plugin's CDS model from its JAR into target/cds/) →
-                cds build (merged model → CSN/EDMX) → generate (Java accessors) →
-                cds deploy (creates & seeds sqlite.db for local dev).
-            -->
+      <!-- CDS lifecycle: npm ci → resolve (plugin model from its JAR) → build → generate → deploy (seeds sqlite.db). -->
       <plugin>
         <groupId>com.sap.cds</groupId>
         <artifactId>cds-maven-plugin</artifactId>
@@ -205,7 +182,7 @@
         </executions>
       </plugin>
 
-      <!-- Surefire runs *Test.java (`test` phase); Failsafe runs the *IT.java suite (`verify` phase). -->
+      <!-- Failsafe runs the *IT suite at `verify`. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -224,7 +201,7 @@
         </executions>
       </plugin>
 
-      <!-- JaCoCo: record integration-test coverage into target/jacoco.exec; merged by the coverage-report module. -->
+      <!-- IT coverage → target/jacoco.exec; merged by the coverage-report module. -->
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
