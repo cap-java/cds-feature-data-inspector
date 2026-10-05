@@ -221,6 +221,15 @@ To quickly test and experience the plugin directly without a dependent project o
 
    The SAPUI5 app is launched in a web browser.
 
+## Minimum Versions
+
+| Component     | Minimum Version |
+| ------------- | --------------- |
+| CAP Java      | 4.9.0           |
+| Java          | 17              |
+| Maven         | 3.6.3           |
+| `@sap/cds-dk` | 9.x             |
+
 ## Security / Disclosure
 
 If you find a bug that might be a security problem, follow the instructions in our [security policy](https://github.com/cap-java/cds-feature-data-inspector/security/policy) to report it. Don't create GitHub issues for security-related questions or problems.
