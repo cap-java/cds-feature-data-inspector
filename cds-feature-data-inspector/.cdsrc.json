@@ -1,0 +1,17 @@
+{
+  "build": {
+    "target": ".",
+    "tasks": [
+      {
+        "for": "java",
+        "src": "src/main/resources/cds/com.sap.cds/cds-feature-data-inspector",
+        "dest": ".",
+        "options": {
+          "model": [
+            "src/main/resources/cds/com.sap.cds/cds-feature-data-inspector"
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -30,3 +30,5 @@ hs_err*
 .vscode
 .idea
 .reloadtrigger
+
+.DS_Store

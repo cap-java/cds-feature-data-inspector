@@ -1,0 +1,81 @@
+# Test-app configuration.
+# Mirrors the "cds" block in the Node.js project's package.json:
+#   - Mock authentication for local dev
+#   - alice user with the plugin's read role
+#   - bob user without the role (used by integration tests for 403 checks)
+#   - SQLite datasource for local dev
+#   - HANA + XSUAA profile stub for BTP deployment
+#   - In-memory audit log service (used by DataInspectorAuditLogIT)
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: cds-feature-data-inspector-test-app
+  profiles:
+    active: default
+
+cds:
+  security:
+    # Mock authentication for local dev and tests.
+    # Equivalent to Node.js: "auth": { "kind": "mocked", "users": { ... } }
+    mock:
+      enabled: true
+      users:
+        # alice has both admin and the data-inspector read role.
+        # Mirrors the test user in the Node.js project's package.json cds.requires block.
+        alice:
+          password: alice
+          roles:
+            - admin
+            - capDataInspectorReadonly
+
+        # bob is an authenticated user WITHOUT the plugin's read role.
+        # Used by the authorization tests to verify a 403 is returned for
+        # authenticated-but-unauthorised users.
+        bob:
+          password: bob
+          roles:
+            - admin
+
+---
+# Local dev profile: SQLite file-based database.
+#
+# Spring Boot's DataSourceAutoConfiguration needs both the JDBC URL and driver
+# class to build the HikariDataSource. CAP Java 4.x layers its own binding-based
+# discovery on top of the same DataSource bean, so declaring both is safe.
+spring:
+  config:
+    activate:
+      on-profile: default
+  datasource:
+    # sqlite.db is created in test-app/ by `mvn process-classes` (cds.deploy execution)
+    url: "jdbc:sqlite:sqlite.db"
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      # SQLite supports only one writer at a time
+      maximum-pool-size: 1
+
+---
+# Cloud / BTP profile: HANA + XSUAA
+# Activate with: --spring.profiles.active=cloud
+spring:
+  config:
+    activate:
+      on-profile: cloud
+
+cds:
+  security:
+    mock:
+      enabled: false
+    authentication:
+      normalize-proof-tokens: true
+  dataSource:
+    binding-based: true
+
+---
+logging:
+  level:
+    com.sap.cds: WARN
+    com.sap.cds.feature.datainspector: INFO

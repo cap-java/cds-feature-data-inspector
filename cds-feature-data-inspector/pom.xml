@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.sap.cds</groupId>
+    <artifactId>cds-feature-data-inspector-root</artifactId>
+    <version>${revision}</version>
+  </parent>
+
+  <!--
+        The reusable CAP Java plugin library (OData services only; the SAPUI5 UI
+        ships separately via the @cap-js/data-inspector npm package).
+
+        Consumers add this as a Maven dependency and reference its CDS model with
+        `using from 'com.sap.cds/cds-feature-data-inspector';`. The handlers are
+        auto-registered via META-INF/services/…CdsRuntimeConfiguration — no further
+        wiring required.
+    -->
+  <artifactId>cds-feature-data-inspector</artifactId>
+  <packaging>jar</packaging>
+  <name>CDS Feature: Data Inspector</name>
+  <description>CAP Java plugin: OData services to browse CDS entity definitions and live data.</description>
+  <url>https://github.com/cap-java/cds-feature-data-inspector</url>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <organization>SAP SE</organization>
+      <organizationUrl>https://www.sap.com</organizationUrl>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git@github.com:cap-java/cds-feature-data-inspector.git</connection>
+    <developerConnection>scm:git:git@github.com:cap-java/cds-feature-data-inspector.git</developerConnection>
+    <url>https://github.com/cap-java/cds-feature-data-inspector</url>
+  </scm>
+
+  <properties>
+    <!--
+            This is the ONE artifact that gets published. The root POM sets
+            maven.deploy.skip=true for all modules; re-enable it here so `mvn deploy`
+            publishes only this plugin JAR (+ its flattened POM).
+        -->
+    <maven.deploy.skip>false</maven.deploy.skip>
+  </properties>
+
+  <dependencies>
+    <!-- Core CAP Java runtime API (EventHandler, @ServiceName, @On, CqnService, CdsRuntime, CdsModel reflection, CQL). -->
+    <dependency>
+      <groupId>com.sap.cds</groupId>
+      <artifactId>cds-services-api</artifactId>
+    </dependency>
+
+    <!-- Serialises java.time.* as ISO-8601 in the 'record' JSON (JavaTimeModule); transitively provides jackson-databind/-core. -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+    </dependency>
+
+    <!-- Logging. -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+
+    <!-- Test: JUnit 5 + AssertJ for RFilterParserTest (versions managed by spring-boot-dependencies). -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Test: CQL runtime to initialise com.sap.cds.ql.CQL in RFilterParserTest (not managed by cds-services-bom). -->
+    <dependency>
+      <groupId>com.sap.cds</groupId>
+      <artifactId>cds4j-runtime</artifactId>
+      <version>${cds.services.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <!-- Stable artifact name for the plugin JAR (consumers reference by artifactId). -->
+    <finalName>${project.artifactId}</finalName>
+    <plugins>
+      <!--
+                Compiles the plugin's own CDS model: install-node + npm ci (installs
+                @sap/cds-dk) → cds build (*.cds → CSN/EDMX) → generate (Java accessors).
+                No resolve/deploy — the plugin has no external CDS deps and no DB schema
+                (its entities are @cds.persistence.skip, served by @On handlers).
+            -->
+      <plugin>
+        <groupId>com.sap.cds</groupId>
+        <artifactId>cds-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>cds.install-node</id>
+            <goals>
+              <goal>install-node</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>cds.npm-ci</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <configuration>
+              <commands>
+                <command>ci</command>
+              </commands>
+            </configuration>
+          </execution>
+          <execution>
+            <id>cds.build</id>
+            <goals>
+              <goal>cds</goal>
+            </goals>
+            <configuration>
+              <workingDirectory>${project.basedir}</workingDirectory>
+              <commands>
+                <command>build --for java</command>
+              </commands>
+            </configuration>
+          </execution>
+          <execution>
+            <id>cds.generate</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <basePackage>com.sap.cds.feature.datainspector</basePackage>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- JaCoCo: record unit-test coverage (RFilterParserTest) into target/jacoco.exec; merged by the coverage-report module. -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>jacoco-prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>jacoco-report</id>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <phase>test</phase>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
