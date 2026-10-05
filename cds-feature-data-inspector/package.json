@@ -1,0 +1,9 @@
+{
+  "name": "cds-feature-data-inspector",
+  "version": "0.0.0",
+  "private": true,
+  "description": "CDS-DK toolchain for compiling the plugin's own CDS model at build time. The runtime is Java; this file exists only to feed `cds:npm ci`.",
+  "devDependencies": {
+    "@sap/cds-dk": "9.9.3"
+  }
+}
