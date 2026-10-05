@@ -80,11 +80,13 @@
     <cds.cdsdk.version>10.0.4</cds.cdsdk.version>
 
     <!--
-            Spring Boot is managed transitively by cds-services-bom (we no longer import
-            spring-boot-dependencies). This property pins only the spring-boot-maven-plugin
-            version (the plugin itself is not managed by cds-services-bom).
+            Spring Boot version for the imported spring-boot-dependencies BOM below and the
+            spring-boot-maven-plugin. Must match the Spring Boot version that
+            cds-services-bom (CAP Java ${cds.services.version}) pulls in transitively —
+            CAP Java 5.1.1 brings Spring Boot 4.1.1 (verify with `mvn dependency:tree`
+            when bumping cds.services.version).
         -->
-    <spring.boot.version>3.5.6</spring.boot.version>
+    <spring.boot.version>4.1.1</spring.boot.version>
 
     <!-- Skip Spotless `check` in normal builds; run `mvn spotless:apply`/`:check` on demand. -->
     <spotless.check.skip>true</spotless.check.skip>
@@ -103,6 +105,13 @@
         <groupId>com.sap.cds</groupId>
         <artifactId>cds-services-bom</artifactId>
         <version>${cds.services.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring.boot.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
