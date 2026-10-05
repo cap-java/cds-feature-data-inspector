@@ -80,13 +80,31 @@
     <cds.cdsdk.version>10.0.4</cds.cdsdk.version>
 
     <!--
-            Spring Boot version for the imported spring-boot-dependencies BOM below and the
-            spring-boot-maven-plugin. Must match the Spring Boot version that
-            cds-services-bom (CAP Java ${cds.services.version}) pulls in transitively —
-            CAP Java 5.1.1 brings Spring Boot 4.1.1 (verify with `mvn dependency:tree`
-            when bumping cds.services.version).
+            Spring Boot version for the spring-boot-maven-plugin (test-app repackage) and
+            the test-app's own spring-boot-dependencies BOM import. Must match the Spring
+            Boot version that cds-services-bom (CAP Java ${cds.services.version}) pulls in
+            transitively — CAP Java 5.1.1 brings Spring Boot 4.1.1 (verify with
+            `mvn dependency:tree` when bumping cds.services.version).
+            NOTE: Spring Boot is intentionally NOT managed in this root POM's
+            dependencyManagement, so it never dictates the published plugin's dependency
+            versions (the plugin's jackson/slf4j come from CAP). The BOM is imported only
+            in test-app/pom.xml, where a real Spring Boot app needs it.
         -->
     <spring.boot.version>4.1.1</spring.boot.version>
+
+    <!-- JUnit 5 BOM — manages junit-jupiter for the plugin module's unit tests. -->
+    <junit.bom.version>6.1.3</junit.bom.version>
+
+    <!-- AssertJ — plugin unit tests (not managed by cds-services-bom). -->
+    <assertj.version>3.27.3</assertj.version>
+
+    <!--
+            jackson-datatype-jsr310 for the plugin's JavaTimeModule. Not managed by
+            cds-services-bom, so pinned explicitly. Keep aligned with the jackson version
+            CAP ships (CAP Java ${cds.services.version} uses jackson 2.22.x) to avoid a
+            split-version classpath at runtime.
+        -->
+    <jackson.jsr310.version>2.22.2</jackson.jsr310.version>
 
     <!-- Skip Spotless `check` in normal builds; run `mvn spotless:apply`/`:check` on demand. -->
     <spotless.check.skip>true</spotless.check.skip>
@@ -108,10 +126,11 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      <!-- JUnit 5 BOM for the plugin module's unit tests (Spring Boot BOM is intentionally NOT imported here). -->
       <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-dependencies</artifactId>
-        <version>${spring.boot.version}</version>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit.bom.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
