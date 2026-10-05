@@ -36,7 +36,11 @@
             "integration_id": 15368
           },
           {
-            "context": "build-and-test / CodeQL Scan",
+            "context": "build-and-test / CodeQL Scan (java-kotlin)",
+            "integration_id": 15368
+          },
+          {
+            "context": "build-and-test / CodeQL Scan (actions)",
             "integration_id": 15368
           },
           {
