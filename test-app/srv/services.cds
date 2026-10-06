@@ -52,3 +52,12 @@ service FoodService {
     }
     entity Food as projection on db.Food;
 }
+
+// RestrictedService: used by DataHandlerIT to verify that a ServiceException (e.g. 403)
+// raised by the inspected service during dataSource.run() is propagated by the Data
+// Inspector with its original status, not masked as a generic 500.
+service RestrictedService {
+
+    @requires: 'restricted-role'
+    entity Secret as projection on db.Product;
+}

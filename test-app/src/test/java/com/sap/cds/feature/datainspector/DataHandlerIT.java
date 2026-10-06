@@ -29,6 +29,15 @@ class DataHandlerIT extends AbstractDataInspectorIT {
     assertThat(getAnonymous(path).getResponse().getStatus()).isEqualTo(401);
   }
 
+  @Test
+  @DisplayName("GET Data — a 403 from the inspected service is propagated, not masked as 500")
+  void inspectedServiceErrorPropagated() throws Exception {
+    String path = "/Data?$filter=entityName eq 'datainspector.test.srv.RestrictedService.Secret'";
+    assertThat(getAsAlice(path).getResponse().getStatus())
+        .as("inspected-service 403 must be propagated as 403, not wrapped as 500")
+        .isEqualTo(403);
+  }
+
   // ═════════════════════════════════════════════════════════════
   // Invalid r_filter operator
   // ═════════════════════════════════════════════════════════════
