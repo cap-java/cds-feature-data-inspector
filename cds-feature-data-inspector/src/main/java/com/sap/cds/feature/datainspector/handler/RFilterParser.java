@@ -400,8 +400,7 @@ final class RFilterParser {
    */
   private static String validated(String element, List<String> allowedElements) {
     if (allowedElements != null && !allowedElements.contains(element)) {
-      throw new FilterParseException(
-          "INVALID_ELEMENT_IN_R_FILTER", "Unknown element in r_filter: " + element);
+      throw new FilterParseException("INVALID_ELEMENT_IN_R_FILTER", element);
     }
     return element;
   }

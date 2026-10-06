@@ -153,7 +153,7 @@ public class DataHandler implements EventHandler {
     CdsEntity entity = entityOpt.get();
 
     if (!validateRecordKey(entity, recordKey)) {
-      throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_RECORD_KEY");
+      throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_RECORD_KEY", recordKey);
     }
 
     // Build the WHERE clause as a typed CQN predicate straight from the key components
@@ -442,7 +442,7 @@ public class DataHandler implements EventHandler {
       } catch (Exception e) {
         // Audit logging is a compliance requirement: if it fails, the read must fail too.
         log.error("Audit log emission failed for entity {}", entityName, e);
-        throw new ServiceException(ErrorStatuses.SERVER_ERROR, "ERROR_EMITTING_AUDIT_LOG");
+        throw new ServiceException(ErrorStatuses.SERVER_ERROR, "Error emitting the audit log");
       }
     }
   }
@@ -476,7 +476,7 @@ public class DataHandler implements EventHandler {
           Arrays.stream(rSelect.split(",")).map(String::trim).collect(Collectors.toList());
       for (String el : requested) {
         if (!recordElements.contains(el)) {
-          throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_ELEMENT_IN_R_SELECT");
+          throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_ELEMENT_IN_R_SELECT", el);
         }
       }
       columnsToSelect = new ArrayList<>(requested);
@@ -539,7 +539,10 @@ public class DataHandler implements EventHandler {
             rc.parsedRFilter = RFilterParser.parse(rFilter, rc.recordElements());
           } catch (RFilterParser.FilterParseException e) {
             log.warn("{}: {}", e.getCode(), e.getMessage());
-            throw new ServiceException(ErrorStatuses.BAD_REQUEST, e.getCode());
+            // The exception message is passed as the {0} argument: for
+            // INVALID_ELEMENT_IN_R_FILTER it is the offending element name; for the
+            // parse-failure codes (no {0} in the message template) it is simply ignored.
+            throw new ServiceException(ErrorStatuses.BAD_REQUEST, e.getCode(), e.getMessage());
           }
         }
       }
@@ -561,7 +564,8 @@ public class DataHandler implements EventHandler {
       String colName = tokens[0];
       String dir = tokens.length > 1 ? tokens[1] : "asc";
       if (!recordElements.contains(colName)) {
-        throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_ELEMENT_IN_R_ORDERBY");
+        throw new ServiceException(
+            ErrorStatuses.BAD_REQUEST, "INVALID_ELEMENT_IN_R_ORDERBY", colName);
       }
       orderSpecs.add(
           "desc".equalsIgnoreCase(dir) ? CQL.get(colName).desc() : CQL.get(colName).asc());
