@@ -1,169 +1,353 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-	<groupId>sap.capire</groupId>
-	<artifactId>plugin-template-emoji-parent</artifactId>
-	<version>${revision}</version>
-	<packaging>pom</packaging>
+  <!--
+        Root (aggregator) POM. Multi-module build:
+          cds-feature-data-inspector/  ← the reusable plugin library (the ONLY published artifact)
+          test-app/                    ← private sample consumer app (smoke tests, not published)
+          coverage-report/             ← aggregated JaCoCo report (not published)
+    -->
 
-	<name>plugin-template-emoji parent</name>
+  <groupId>com.sap.cds</groupId>
+  <artifactId>cds-feature-data-inspector-root</artifactId>
+  <version>${revision}</version>
+  <packaging>pom</packaging>
 
-	<properties>
-		<!-- OUR VERSION -->
-		<revision>1.0.0-SNAPSHOT</revision>
+  <name>CDS Feature: Data Inspector — Root</name>
+  <description>Aggregator POM for the cds-feature-data-inspector CAP Java plugin
+        and its bundled test-app consumer application.</description>
+  <url>https://github.com/cap-java/cds-feature-data-inspector</url>
 
-		<!-- DEPENDENCIES VERSION -->
-		<jdk.version>17</jdk.version>
-		<cds.services.version>4.4.1</cds.services.version>
-		<spring.boot.version>3.5.6</spring.boot.version>
+  <organization>
+    <name>SAP SE</name>
+    <url>https://www.sap.com</url>
+  </organization>
 
-		<cds.install-node.downloadUrl>https://nodejs.org/dist/</cds.install-node.downloadUrl>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 
-	<modules>
-		<module>srv</module>
-	</modules>
+  <developers>
+    <developer>
+      <organization>SAP SE</organization>
+      <organizationUrl>https://www.sap.com</organizationUrl>
+    </developer>
+  </developers>
 
-	<dependencyManagement>
-		<dependencies>
-			<!-- CDS SERVICES -->
-			<dependency>
-				<groupId>com.sap.cds</groupId>
-				<artifactId>cds-services-bom</artifactId>
-				<version>${cds.services.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
+  <modules>
+    <module>cds-feature-data-inspector</module>
+    <module>test-app</module>
+    <!-- Listed last: merges the above two modules' JaCoCo exec data into one report. -->
+    <module>coverage-report</module>
+  </modules>
 
-			<!-- SPRING BOOT -->
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-dependencies</artifactId>
-				<version>${spring.boot.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+  <scm>
+    <connection>scm:git:git@github.com:cap-java/cds-feature-data-inspector.git</connection>
+    <developerConnection>scm:git:git@github.com:cap-java/cds-feature-data-inspector.git</developerConnection>
+    <url>https://github.com/cap-java/cds-feature-data-inspector</url>
+  </scm>
 
-	<build>
-		<pluginManagement>
-			<plugins>
-				<!-- MAKE CDS PLUGIN RUNNABLE FROM ROOT -->
-				<plugin>
-					<groupId>com.sap.cds</groupId>
-					<artifactId>cds-maven-plugin</artifactId>
-					<version>${cds.services.version}</version>
-				</plugin>
-			</plugins>
-		</pluginManagement>
+  <distributionManagement>
+    <repository>
+      <id>central</id>
+      <name>MavenCentral</name>
+      <url>https://central.sonatype.com</url>
+    </repository>
+    <snapshotRepository>
+      <id>artifactory</id>
+      <name>Artifactory_DMZ-snapshots</name>
+      <url>https://common.repositories.cloud.sap/artifactory/cap-java</url>
+    </snapshotRepository>
+  </distributionManagement>
 
-		<plugins>
-			<!-- JAVA VERSION -->
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.14.1</version>
-				<configuration>
-					<release>${jdk.version}</release>
-					<encoding>UTF-8</encoding>
-				</configuration>
-			</plugin>
+  <properties>
+    <!-- CI-friendly version placeholder, resolved at build time by flatten-maven-plugin. -->
+    <revision>1.0.0-SNAPSHOT</revision>
 
-			<!-- MAKE SPRING BOOT PLUGIN RUNNABLE FROM ROOT -->
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<version>${spring.boot.version}</version>
-				<configuration>
-					<skip>true</skip>
-				</configuration>
-			</plugin>
+    <java.version>21</java.version>
+    <maven.compiler.release>${java.version}</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-			<!-- SUREFIRE VERSION -->
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.5.4</version>
-			</plugin>
+    <!-- CDS version — governs cds-services-* and cds-feature-* (and the cds-maven-plugin). -->
+    <cds.services.version>5.1.1</cds.services.version>
 
-			<!-- POM FLATTENING FOR CI FRIENDLY VERSIONS -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>flatten-maven-plugin</artifactId>
-				<version>1.7.3</version>
-				<configuration>
-					<updatePomFile>true</updatePomFile>
-					<flattenMode>resolveCiFriendliesOnly</flattenMode>
-				</configuration>
-				<executions>
-					<execution>
-						<id>flatten</id>
-						<phase>process-resources</phase>
-						<goals>
-							<goal>flatten</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>flatten.clean</id>
-						<phase>clean</phase>
-						<goals>
-							<goal>clean</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+    <cds.cdsdk.version>10.0.4</cds.cdsdk.version>
 
-			<!-- PROJECT STRUCTURE CHECKS -->
-			<plugin>
-				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>3.6.2</version>
-				<executions>
-					<execution>
-						<id>Project Structure Checks</id>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
-						<configuration>
-							<rules>
-								<requireMavenVersion>
-									<version>3.6.3</version>
-								</requireMavenVersion>
-								<requireJavaVersion>
-									<version>${jdk.version}</version>
-								</requireJavaVersion>
-								<reactorModuleConvergence />
-							</rules>
-							<fail>true</fail>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+    <!--
+            Must match the Spring Boot version CAP Java ${cds.services.version} pulls in
+            transitively (verify with `mvn dependency:tree` on a bump). Imported only by
+            test-app — kept out of root dependencyManagement so it never dictates the
+            published plugin's dependency versions.
+        -->
+    <spring.boot.version>4.1.1</spring.boot.version>
 
-			<!-- CHECKSTYLE -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>3.6.0</version>
-				<configuration>
-					<configLocation>google_checks.xml</configLocation>
-					<encoding>UTF-8</encoding>
-					<consoleOutput>true</consoleOutput>
-					<failsOnError>true</failsOnError>
-					<linkXRef>false</linkXRef>
-				</configuration>
-				<executions>
-					<execution>
-						<id>check-style</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+    <junit.bom.version>6.1.3</junit.bom.version>
+
+    <!-- Not managed by cds-services-bom; pinned explicitly. -->
+    <assertj.version>3.27.3</assertj.version>
+
+    <!-- Not managed by cds-services-bom; keep aligned with CAP's jackson line to avoid a split-version classpath. -->
+    <jackson.jsr310.version>2.22.2</jackson.jsr310.version>
+
+    <!-- Skip Spotless `check` in normal builds; run `mvn spotless:apply`/`:check` on demand. -->
+    <spotless.check.skip>true</spotless.check.skip>
+
+    <!-- Skip deploy for ALL modules by default; the plugin module overrides to false so only it is published. -->
+    <maven.deploy.skip>true</maven.deploy.skip>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.sap.cds</groupId>
+        <artifactId>cds-services-bom</artifactId>
+        <version>${cds.services.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <!-- Spring Boot BOM is intentionally NOT imported here — see spring.boot.version note. -->
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit.bom.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.13.0</version>
+          <configuration>
+            <release>${maven.compiler.release}</release>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.5.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>3.5.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>3.5.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>3.1.4</version>
+        </plugin>
+        <!-- Source/javadoc/gpg/central-publishing: used by the deploy-release profile. -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>3.3.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.11.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>3.2.7</version>
+        </plugin>
+        <plugin>
+          <groupId>org.sonatype.central</groupId>
+          <artifactId>central-publishing-maven-plugin</artifactId>
+          <version>0.7.0</version>
+          <extensions>true</extensions>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>flatten-maven-plugin</artifactId>
+          <version>1.6.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <version>${spring.boot.version}</version>
+        </plugin>
+        <!-- Compiles *.cds → EDMX + Java accessors; version must match cds.services.version. -->
+        <plugin>
+          <groupId>com.sap.cds</groupId>
+          <artifactId>cds-maven-plugin</artifactId>
+          <version>${cds.services.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>0.8.15</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <!-- Resolves ${revision} to a concrete version in the published POM. -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+        <configuration>
+          <updatePomFile>true</updatePomFile>
+          <flattenMode>resolveCiFriendliesOnly</flattenMode>
+        </configuration>
+        <executions>
+          <execution>
+            <id>flatten</id>
+            <goals>
+              <goal>flatten</goal>
+            </goals>
+            <phase>process-resources</phase>
+          </execution>
+          <execution>
+            <id>flatten.clean</id>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+            <phase>clean</phase>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Sanity guardrails matching cds-feature-attachments/-auditlog-ng. -->
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>no-duplicate-declared-dependencies</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <banDuplicatePomDependencyVersions/>
+                <requireMavenVersion>
+                  <version>3.6.3</version>
+                </requireMavenVersion>
+                <requireJavaVersion>
+                  <version>${java.version}</version>
+                </requireJavaVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- `mvn spotless:apply` to fix formatting, `:check` to verify. -->
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>3.6.0</version>
+        <configuration>
+          <java>
+            <googleJavaFormat>
+              <style>GOOGLE</style>
+            </googleJavaFormat>
+            <licenseHeader>
+              <content>/*
+ * © $YEAR SAP SE or an SAP affiliate company and cds-feature-data-inspector contributors.
+ */</content>
+            </licenseHeader>
+          </java>
+          <pom>
+            <includes>
+              <include>pom.xml</include>
+            </includes>
+            <sortPom/>
+          </pom>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>process-sources</phase>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <!--
+            Maven Central release (`mvn deploy -Pdeploy-release`): attach sources+javadoc,
+            GPG-sign, publish via central-publishing. excludeArtifacts ensures only the
+            plugin JAR is uploaded (root/test-app/coverage-report are not).
+        -->
+    <profile>
+      <id>deploy-release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <phase>deploy</phase>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <configuration>
+              <publishingServerId>central</publishingServerId>
+              <excludeArtifacts>
+                <excludeArtifact>cds-feature-data-inspector-root</excludeArtifact>
+                <excludeArtifact>cds-feature-data-inspector-test-app</excludeArtifact>
+                <excludeArtifact>cds-feature-data-inspector-coverage-report</excludeArtifact>
+              </excludeArtifacts>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

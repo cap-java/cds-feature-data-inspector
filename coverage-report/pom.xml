@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.sap.cds</groupId>
+    <artifactId>cds-feature-data-inspector-root</artifactId>
+    <version>${revision}</version>
+  </parent>
+
+  <artifactId>cds-feature-data-inspector-coverage-report</artifactId>
+  <packaging>pom</packaging>
+
+  <name>CDS Feature: Data Inspector — Coverage Report</name>
+  <description>Aggregated JaCoCo coverage report for the cds-feature-data-inspector plugin,
+        merging the plugin module's unit-test coverage with the test-app module's
+        integration-test coverage. Not published.</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.sap.cds</groupId>
+      <artifactId>cds-feature-data-inspector</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sap.cds</groupId>
+      <artifactId>cds-feature-data-inspector-test-app</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+
+      <!-- This pom module has no classes dir; copy the plugin's so jacoco:check can analyse them. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.3.1</version>
+        <executions>
+          <execution>
+            <id>copy-plugin-classes</id>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <phase>prepare-package</phase>
+            <configuration>
+              <outputDirectory>${project.build.directory}/classes</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${project.basedir}/../cds-feature-data-inspector/target/classes</directory>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>jacoco-merge</id>
+            <goals>
+              <goal>merge</goal>
+            </goals>
+            <phase>prepare-package</phase>
+            <configuration>
+              <fileSets>
+                <fileSet>
+                  <directory>${project.basedir}/..</directory>
+                  <includes>
+                    <include>cds-feature-data-inspector/target/jacoco.exec</include>
+                    <include>test-app/target/jacoco.exec</include>
+                  </includes>
+                </fileSet>
+              </fileSets>
+              <destFile>${project.build.directory}/jacoco-merged.exec</destFile>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>jacoco-aggregate-report</id>
+            <goals>
+              <goal>report-aggregate</goal>
+            </goals>
+            <phase>verify</phase>
+            <configuration>
+              <!-- Measure only hand-written plugin code (exclude test-app + CDS-generated accessors). -->
+              <excludes>
+                <exclude>com/sap/cds/feature/datainspector/testapp/**/*</exclude>
+                <exclude>com/sap/cds/feature/datainspector/datainspectorservice/**/*</exclude>
+                <exclude>com/sap/cds/feature/datainspector/cds/**/*</exclude>
+                <exclude>com/sap/cap/datainspector/**/*</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+
+          <!-- Coverage gate: fails the build below the thresholds (raise as coverage grows). -->
+          <execution>
+            <id>jacoco-check</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>verify</phase>
+            <configuration>
+              <dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
+              <includes>
+                <include>com/sap/cds/feature/datainspector/**/*</include>
+              </includes>
+              <excludes>
+                <exclude>com/sap/cds/feature/datainspector/testapp/**/*</exclude>
+                <exclude>com/sap/cds/feature/datainspector/datainspectorservice/**/*</exclude>
+                <exclude>com/sap/cds/feature/datainspector/cds/**/*</exclude>
+                <exclude>com/sap/cap/datainspector/**/*</exclude>
+              </excludes>
+              <rules>
+                <rule implementation="org.jacoco.maven.RuleConfiguration">
+                  <element>BUNDLE</element>
+                  <limits>
+                    <limit implementation="org.jacoco.report.check.Limit">
+                      <counter>INSTRUCTION</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.85</minimum>
+                    </limit>
+                    <limit implementation="org.jacoco.report.check.Limit">
+                      <counter>BRANCH</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.75</minimum>
+                    </limit>
+                  </limits>
+                </rule>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

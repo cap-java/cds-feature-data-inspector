@@ -10,6 +10,7 @@ default-env.json
 **/bin/
 **/target/
 .flattened-pom.xml
+**/.flattened-pom.xml
 .classpath
 .project
 .settings
@@ -29,3 +30,5 @@ hs_err*
 .vscode
 .idea
 .reloadtrigger
+
+.DS_Store

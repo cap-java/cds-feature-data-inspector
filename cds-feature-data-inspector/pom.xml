@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.sap.cds</groupId>
+    <artifactId>cds-feature-data-inspector-root</artifactId>
+    <version>${revision}</version>
+  </parent>
+
+  <!--
+        The reusable CAP Java plugin library (OData services only; the SAPUI5 UI
+        ships separately via the @cap-js/data-inspector npm package).
+
+        Consumers add this as a Maven dependency and reference its CDS model with
+        `using from 'com.sap.cds/cds-feature-data-inspector';`. The handlers are
+        auto-registered via META-INF/services/…CdsRuntimeConfiguration — no further
+        wiring required.
+    -->
+  <artifactId>cds-feature-data-inspector</artifactId>
+  <packaging>jar</packaging>
+  <name>CDS Feature: Data Inspector</name>
+  <description>CAP Java plugin: OData services to browse CDS entity definitions and live data.</description>
+  <url>https://github.com/cap-java/cds-feature-data-inspector</url>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <organization>SAP SE</organization>
+      <organizationUrl>https://www.sap.com</organizationUrl>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git@github.com:cap-java/cds-feature-data-inspector.git</connection>
+    <developerConnection>scm:git:git@github.com:cap-java/cds-feature-data-inspector.git</developerConnection>
+    <url>https://github.com/cap-java/cds-feature-data-inspector</url>
+  </scm>
+
+  <properties>
+    <!-- The ONLY published module: override the root's maven.deploy.skip=true. -->
+    <maven.deploy.skip>false</maven.deploy.skip>
+  </properties>
+
+  <dependencies>
+    <!-- Core CAP Java runtime API. Also provides slf4j-api transitively (not declared here). -->
+    <dependency>
+      <groupId>com.sap.cds</groupId>
+      <artifactId>cds-services-api</artifactId>
+    </dependency>
+
+    <!-- JavaTimeModule for ISO-8601 java.time.* in the 'record' JSON. Explicit version: not managed by cds-services-bom. -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+      <version>${jackson.jsr310.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${assertj.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Initialises com.sap.cds.ql.CQL in RFilterParserTest; not managed by cds-services-bom. -->
+    <dependency>
+      <groupId>com.sap.cds</groupId>
+      <artifactId>cds4j-runtime</artifactId>
+      <version>${cds.services.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>${project.artifactId}</finalName>
+    <plugins>
+      <!-- Compiles the plugin's own CDS model. No resolve/deploy: no external CDS deps, entities are @cds.persistence.skip (served by @On handlers). -->
+      <plugin>
+        <groupId>com.sap.cds</groupId>
+        <artifactId>cds-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>cds.install-node</id>
+            <goals>
+              <goal>install-node</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>cds.npm-ci</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <configuration>
+              <commands>
+                <command>ci</command>
+              </commands>
+            </configuration>
+          </execution>
+          <execution>
+            <id>cds.build</id>
+            <goals>
+              <goal>cds</goal>
+            </goals>
+            <configuration>
+              <workingDirectory>${project.basedir}</workingDirectory>
+              <commands>
+                <command>build --for java</command>
+              </commands>
+            </configuration>
+          </execution>
+          <execution>
+            <id>cds.generate</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <basePackage>com.sap.cds.feature.datainspector</basePackage>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Unit-test coverage → target/jacoco.exec; merged by the coverage-report module. -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>jacoco-prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>jacoco-report</id>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <phase>test</phase>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
