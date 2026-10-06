@@ -183,6 +183,11 @@ class DataHandlerPaginationIT extends AbstractDataInspectorIT {
     assertThat(getAsAlice(FOOD_SERVICE + "&$count=true&$skip=1&$top=-1").getResponse().getStatus())
         .as("negative $top must be rejected")
         .isEqualTo(400);
+
+    // Non-numeric $top → 400.
+    assertThat(getAsAlice(FOOD_SERVICE + "&$top=abc").getResponse().getStatus())
+        .as("non-numeric $top must be rejected")
+        .isEqualTo(400);
   }
 
   // ═════════════════════════════════════════════════════════════

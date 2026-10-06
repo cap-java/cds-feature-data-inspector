@@ -500,7 +500,13 @@ public class DataHandler implements EventHandler {
     long limit = defaultPageSize;
     String topParam = params.getQueryParameter("$top");
     if (topParam != null) {
-      long top = Long.parseLong(topParam);
+      final long top;
+      try {
+        top = Long.parseLong(topParam);
+      } catch (NumberFormatException e) {
+        // Mirror the $skip / $skiptoken handling: a malformed $top is a 400, not a 500.
+        throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_TOP");
+      }
       if (top < 0) throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_TOP");
       limit = Math.min(top, maxPageSize);
     }
