@@ -188,7 +188,9 @@ class DataReaderIT extends AbstractDataInspectorIT {
     assertThat(keyRes.getResponse().getStatus()).isEqualTo(400);
     assertThat(json(keyRes).get("error").get("message").asText())
         .as("INVALID_RECORD_KEY must resolve and interpolate the bad key via {0}")
-        .isEqualTo("Invalid key in recordKey: wrongKey=1 ");
+        // CAP Java trims trailing whitespace from the resolved message, so the bundle's
+        // trailing space after {0} (kept for Node parity) does not appear in the output.
+        .isEqualTo("Invalid key in recordKey: wrongKey=1");
 
     MvcResult filterRes =
         getAsAlice(
