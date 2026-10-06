@@ -221,6 +221,9 @@ public class DataHandler implements EventHandler {
     Result result;
     try {
       result = dataSource.run(query);
+    } catch (ServiceException e) {
+      // Preserve the original status (e.g. 403 when the inspected service rejects the user)
+      throw e;
     } catch (Exception e) {
       log.error("Failed to run query on entity {}: {}", entity.getQualifiedName(), e.getMessage());
       throw new ServiceException(ErrorStatuses.SERVER_ERROR, "ERROR_RUNNING_DB_QUERY");
@@ -236,12 +239,12 @@ public class DataHandler implements EventHandler {
       } else {
         totalCount = 0L;
       }
+    } catch (ServiceException e) {
+      // Preserve the original status (e.g. 403 when the inspected service rejects the user)
+      throw e;
     } catch (Exception e) {
-      log.warn(
-          "Count query failed for {}, falling back to page size: {}",
-          entity.getQualifiedName(),
-          e.getMessage());
-      totalCount = result.rowCount();
+      log.error("Count query failed for {}: {}", entity.getQualifiedName(), e.getMessage());
+      throw new ServiceException(ErrorStatuses.SERVER_ERROR, "ERROR_RUNNING_DB_QUERY");
     }
     rc.totalCount = totalCount;
 
@@ -328,9 +331,12 @@ public class DataHandler implements EventHandler {
       CqnSelect probe = buildNextPageProbeQuery(rc, nextOffset);
       Result probeResult = dataSource.run(probe);
       return probeResult.rowCount() > 0 ? nextOffset : null;
+    } catch (ServiceException e) {
+      // Preserve the original status (e.g. 403 when the inspected service rejects the user)
+      throw e;
     } catch (Exception e) {
-      log.warn("Next-page probe failed for {}: {}", entity.getQualifiedName(), e.getMessage());
-      return null; // non-fatal — just no nextLink
+      log.error("Next-page probe failed for {}: {}", entity.getQualifiedName(), e.getMessage());
+      throw new ServiceException(ErrorStatuses.SERVER_ERROR, "ERROR_RUNNING_DB_QUERY");
     }
   }
 
