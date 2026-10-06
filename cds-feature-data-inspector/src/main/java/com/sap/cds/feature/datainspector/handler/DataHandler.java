@@ -156,11 +156,11 @@ public class DataHandler implements EventHandler {
       throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_RECORD_KEY");
     }
 
-    // "key1=val1&key2=val2" → "key1 eq 'val1' and key2 eq 'val2'" (the WHERE
-    // clause)
-    String rFilterFromKey = buildRFilterFromRecordKey(recordKey);
+    // Build the WHERE clause as a typed CQN predicate straight from the key components
+    // (e.g. "key1=val1&key2=val2" → key1 = val1 AND key2 = val2).
+    CqnPredicate keyPredicate = buildPredicateFromRecordKey(recordKey);
 
-    executeAndRespond(context, model, entity, rFilterFromKey, true);
+    executeAndRespond(context, model, entity, keyPredicate, true);
   }
 
   // ── OData Collection
@@ -199,14 +199,14 @@ public class DataHandler implements EventHandler {
    * Builds and runs the SELECT against the resolved data source, then sets the OData response with
    * the total count.
    *
-   * @param rFilterFromKey pre-built WHERE clause from a recordKey, or null for collections
+   * @param keyPredicate pre-built WHERE clause from a recordKey, or null for collections
    * @param isByKey true for by-key requests (empty result → 404)
    */
   private void executeAndRespond(
       CdsReadEventContext context,
       CdsModel model,
       CdsEntity entity,
-      String rFilterFromKey,
+      CqnPredicate keyPredicate,
       boolean isByKey) {
 
     ParameterInfo params = context.getParameterInfo();
@@ -214,7 +214,7 @@ public class DataHandler implements EventHandler {
 
     // Per-request cache computed once and reused.
     // The handler is a shared singleton, so this state must live in a request-scoped object.
-    RequestContext rc = new RequestContext(entity, params, rFilterFromKey);
+    RequestContext rc = new RequestContext(entity, params, keyPredicate);
 
     CqnSelect query = buildQuery(rc);
 
@@ -517,22 +517,30 @@ public class DataHandler implements EventHandler {
   }
 
   /**
-   * Applies the WHERE clause: rFilterFromKey when set (from a validated recordKey), otherwise the
-   * user-supplied r_filter. Parsing is delegated to {@link RFilterParser}; its parse failures are
-   * translated here into the matching 400 OData error.
+   * Applies the WHERE clause. For a by-key request the predicate is the pre-built {@code
+   * keyPredicate} (typed, bound values — no text parsing). For a collection request it is parsed
+   * from the user-supplied r_filter via {@link RFilterParser}; parse failures are translated here
+   * into the matching 400 OData error.
+   *
+   * <p>Note: {@code r_filter} string literals cannot contain an apostrophe — the hand-written
+   * filter grammar has no escape syntax for {@code '} inside a quoted value. This is a known, minor
+   * limitation of the r_filter expression language (not a security issue: values are bound via
+   * {@link CQL#val}, never concatenated into SQL).
    */
   private void applyRFilter(Select<?> select, RequestContext rc) {
     if (!rc.rFilterParsed) {
-      String rFilter =
-          (rc.rFilterFromKey != null) ? rc.rFilterFromKey : rc.params.getQueryParameter("r_filter");
-      if (rFilter != null && !rFilter.isBlank()) {
-        // recordKey-derived filters are already vetted, so element validation is skipped (null).
-        List<String> allowed = (rc.rFilterFromKey == null) ? rc.recordElements() : null;
-        try {
-          rc.parsedRFilter = RFilterParser.parse(rFilter, allowed);
-        } catch (RFilterParser.FilterParseException e) {
-          log.warn("{}: {}", e.getCode(), e.getMessage());
-          throw new ServiceException(ErrorStatuses.BAD_REQUEST, e.getCode());
+      if (rc.keyPredicate != null) {
+        // By-key request: use the typed predicate built from the recordKey directly.
+        rc.parsedRFilter = rc.keyPredicate;
+      } else {
+        String rFilter = rc.params.getQueryParameter("r_filter");
+        if (rFilter != null && !rFilter.isBlank()) {
+          try {
+            rc.parsedRFilter = RFilterParser.parse(rFilter, rc.recordElements());
+          } catch (RFilterParser.FilterParseException e) {
+            log.warn("{}: {}", e.getCode(), e.getMessage());
+            throw new ServiceException(ErrorStatuses.BAD_REQUEST, e.getCode());
+          }
         }
       }
       rc.rFilterParsed = true;
@@ -652,15 +660,24 @@ public class DataHandler implements EventHandler {
     return expectedKeys.isEmpty(); // all composite keys must be supplied
   }
 
-  /** Converts "key1=val1&key2=val2" into "key1 eq 'val1' and key2 eq 'val2'". */
-  private String buildRFilterFromRecordKey(String recordKey) {
-    return Arrays.stream(recordKey.split("&"))
-        .map(
-            pair -> {
-              String[] kv = pair.split("=", 2);
-              return kv[0] + " eq '" + kv[1] + "'";
-            })
-        .collect(Collectors.joining(" and "));
+  /**
+   * Builds a typed CQN equality predicate from the recordKey (e.g. "key1=val1&key2=val2" → key1 =
+   * val1 AND key2 = val2). Values are passed via {@link CQL#val} as bound parameters, so characters
+   * that are significant in filter syntax (notably an apostrophe) are handled safely; CAP's query
+   * runtime converts each string value to the key element's actual type. The recordKey is assumed
+   * valid here (checked by {@link #validateRecordKey}).
+   *
+   * <p>Known limitation: the "key=value&…" format is ambiguous if a key value itself contains the
+   * delimiter characters {@code &} or {@code =}; such values cannot be represented. This does not
+   * affect the common key types (UUID, numeric, date, enum-like strings).
+   */
+  private CqnPredicate buildPredicateFromRecordKey(String recordKey) {
+    List<CqnPredicate> predicates = new ArrayList<>();
+    for (String pair : recordKey.split("&")) {
+      String[] kv = pair.split("=", 2);
+      predicates.add(CQL.get(kv[0]).eq(CQL.val(kv[1])));
+    }
+    return predicates.size() == 1 ? predicates.get(0) : CQL.and(predicates);
   }
 
   /** Parses "entityName eq 'Foo'" and returns "Foo", or null if the pattern differs. */
@@ -724,8 +741,8 @@ public class DataHandler implements EventHandler {
     private final CdsEntity entity;
     private final ParameterInfo params;
 
-    /** Pre-built WHERE clause from a recordKey, or {@code null} for collection requests. */
-    private final String rFilterFromKey;
+    /** Pre-built key WHERE clause for a by-key request, or {@code null} for collection requests. */
+    private final CqnPredicate keyPredicate;
 
     private List<String> recordElements;
     private List<String> keyElements;
@@ -737,10 +754,10 @@ public class DataHandler implements EventHandler {
     /** Total matching row count; set once by executeAndRespond after the COUNT query. */
     private long totalCount;
 
-    RequestContext(CdsEntity entity, ParameterInfo params, String rFilterFromKey) {
+    RequestContext(CdsEntity entity, ParameterInfo params, CqnPredicate keyPredicate) {
       this.entity = entity;
       this.params = params;
-      this.rFilterFromKey = rFilterFromKey;
+      this.keyPredicate = keyPredicate;
     }
 
     /** Record element names, computed once. */

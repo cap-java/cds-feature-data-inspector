@@ -172,6 +172,24 @@ class DataHandlerIT extends AbstractDataInspectorIT {
     assertThat(neEntity).as("non-existent entity must be 404").isEqualTo(404);
   }
 
+  @Test
+  @DisplayName("GET Data by ID — key values containing an apostrophe are fetchable")
+  void queryByIdWithApostropheInKey() throws Exception {
+    // The seed row has composite key values that contain apostrophes (O'Brien, W'026, O'026).
+    // In the OData URL a literal apostrophe is escaped by doubling it (''). The handler builds a
+    // typed CQN predicate from the key, so the apostrophe is a plain value — not filter syntax —
+    // and the row is returned instead of failing to parse.
+    JsonNode r =
+        getJsonAsAlice(
+            "/Data(entityName='datainspector.test.db.HelloWorld',"
+                + "recordKey='helloId=O''Brien&worldId=W''026&otherId=O''026')");
+    assertThat(r.get("entityName").asText()).isEqualTo("datainspector.test.db.HelloWorld");
+    assertThat(r.get("recordKey").asText())
+        .isEqualTo("helloId=O'Brien&worldId=W'026&otherId=O'026");
+    JsonNode record = objectMapper.readTree(r.get("record").asText());
+    assertThat(record.get("color").asText()).isEqualTo("Rose");
+  }
+
   // ═════════════════════════════════════════════════════════════
   // $count
   // ═════════════════════════════════════════════════════════════
