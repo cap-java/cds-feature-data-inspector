@@ -10,10 +10,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
- * Server-side pagination tests for {@link com.sap.cds.feature.datainspector.DataHandler}.
+ * Server-side pagination tests for {@link com.sap.cds.feature.datainspector.DataReader}.
  *
  * <p>The FoodService in the test-app declares {@code @cds.query.limit: { default: 10, max: 20 }}.
- * The DataHandler applies these limits when constructing the SQL LIMIT/OFFSET clause; a db-level
+ * The DataReader applies these limits when constructing the SQL LIMIT/OFFSET clause; a db-level
  * entity without that annotation is returned unpaged.
  *
  * <p>Inline count: with {@code $count=true} CAP Java's OData V4 serializer emits the total under
@@ -23,14 +23,14 @@ import org.junit.jupiter.api.Test;
  * <p>Note on {@code @odata.nextLink}: the CAP Java OData adapter does not emit a nextLink for this
  * virtual, {@code @cds.persistence.skip} Data entity, and an {@code @On} handler has no hook to add
  * one. The handler still computes the next-page offset internally (see {@code
- * DataHandler.computeNextLinkOffset}) but it is not surfaced to the client, so these tests never
+ * DataReader.computeNextLinkOffset}) but it is not surfaced to the client, so these tests never
  * assert on it. Clients paginate by passing {@code $skiptoken=<offset>} explicitly; truncation is
  * verified behaviourally in {@link #truncationReachableViaSkiptoken()}.
  *
  * <p>The Food data set has exactly 100 rows and 19 of them contain "Rice" in the ingredients column
  * (verified from the CSV at test scaffolding time).
  */
-class DataHandlerPaginationIT extends AbstractDataInspectorIT {
+class DataReaderPaginationIT extends AbstractDataInspectorIT {
 
   private static final int FOOD_TOTAL = 100;
   private static final int RICE_TOTAL = 19;
@@ -174,7 +174,7 @@ class DataHandlerPaginationIT extends AbstractDataInspectorIT {
         .as("negative $skip must be rejected")
         .isEqualTo(400);
 
-    // Negative $skiptoken → 400 (see DataHandler.computeOffset).
+    // Negative $skiptoken → 400 (see DataReader.computeOffset).
     assertThat(getAsAlice(FOOD_SERVICE + "&$count=true&$skiptoken=-1").getResponse().getStatus())
         .as("negative $skiptoken must be rejected")
         .isEqualTo(400);

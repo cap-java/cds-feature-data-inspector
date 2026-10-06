@@ -43,15 +43,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @ServiceName("DataInspectorService")
-public class EntityDefinitionHandler implements EventHandler {
+public class EntityDefinitionReader implements EventHandler {
 
   private final CdsRuntime runtime;
 
   /**
-   * Runtime is injected via the constructor (see {@link DataHandler} for the DI (dependency
+   * Runtime is injected via the constructor (see {@link DataReader} for the DI (dependency
    * injection) rationale).
    */
-  public EntityDefinitionHandler(CdsRuntime runtime) {
+  public EntityDefinitionReader(CdsRuntime runtime) {
     this.runtime = runtime;
   }
 

@@ -9,8 +9,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-/** Integration tests for {@link com.sap.cds.feature.datainspector.EntityDefinitionHandler}. */
-class EntityDefinitionHandlerIT extends AbstractDataInspectorIT {
+/** Integration tests for {@link com.sap.cds.feature.datainspector.EntityDefinitionReader}. */
+class EntityDefinitionReaderIT extends AbstractDataInspectorIT {
 
   // ═════════════════════════════════════════════════════════════
   // Authorization
@@ -338,7 +338,7 @@ class EntityDefinitionHandlerIT extends AbstractDataInspectorIT {
   @DisplayName("GET EntityDefinitions $skip / $top — malformed, negative or overflowing → 400")
   void skipTopNegativeAndMalformed() throws Exception {
     // Malformed, negative and out-of-int-range pagination parameters must be rejected with 400,
-    // never escaping as a 500 (see EntityDefinitionHandler.parseNonNegativeInt).
+    // never escaping as a 500 (see EntityDefinitionReader.parseNonNegativeInt).
     for (String query :
         new String[] {
           "$top=abc", // non-numeric $top

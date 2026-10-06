@@ -76,9 +76,9 @@ import org.slf4j.LoggerFactory;
  * on the record columns.
  */
 @ServiceName("DataInspectorService")
-public class DataHandler implements EventHandler {
+public class DataReader implements EventHandler {
 
-  private static final Logger log = LoggerFactory.getLogger(DataHandler.class);
+  private static final Logger log = LoggerFactory.getLogger(DataReader.class);
 
   private final CdsRuntime runtime;
 
@@ -104,7 +104,7 @@ public class DataHandler implements EventHandler {
    * from the {@link CdsRuntime}, which {@code Registration} obtains at startup and passes in here.
    * This also keeps the handler testable (the tests supply their own services).
    */
-  public DataHandler(CdsRuntime runtime, PersistenceService db, AuditLogService auditLogService) {
+  public DataReader(CdsRuntime runtime, PersistenceService db, AuditLogService auditLogService) {
     this.runtime = runtime;
     this.db = db;
     this.auditLogService = auditLogService;

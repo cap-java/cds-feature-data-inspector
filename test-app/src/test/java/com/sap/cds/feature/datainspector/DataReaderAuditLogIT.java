@@ -22,7 +22,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Import;
 
 /**
- * Audit-log integration tests for {@link com.sap.cds.feature.datainspector.DataHandler}.
+ * Audit-log integration tests for {@link com.sap.cds.feature.datainspector.DataReader}.
  *
  * <p>CAP Java's audit log v2 exposes an {@link AuditLogService} whose typed "logDataAccess" event
  * (event name: {@link DataAccessLogContext#CDS_NAME}) fires for every read of an element annotated
@@ -38,8 +38,8 @@ import org.springframework.context.annotation.Import;
  * if (name === "audit-log") return { log: ... } } monkey-patch — but here we don't replace the
  * service, we merely observe it.
  */
-@Import(DataHandlerAuditLogIT.AuditRecorderConfig.class)
-class DataHandlerAuditLogIT extends AbstractDataInspectorIT {
+@Import(DataReaderAuditLogIT.AuditRecorderConfig.class)
+class DataReaderAuditLogIT extends AbstractDataInspectorIT {
 
   /**
    * Spring @TestConfiguration that pulls the AuditEventRecorder into the test's ApplicationContext.
@@ -108,7 +108,7 @@ class DataHandlerAuditLogIT extends AbstractDataInspectorIT {
     JsonNode r = getJsonAsAlice("/Data?$filter=entityName eq 'datainspector.test.db.Order'");
     assertThat(r.get("value").size()).isEqualTo(11);
 
-    // DataHandler batches all sensitive-row reads of a single request into ONE
+    // DataReader batches all sensitive-row reads of a single request into ONE
     // AuditLogService.logDataAccess(List<Access>) call.  CAP Java's auditlog-v2
     // dispatches the DataAccessLogContext event asynchronously (via the default
     // outbox implementation), so we cannot assert immediately — we must

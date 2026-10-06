@@ -11,10 +11,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MvcResult;
 
 /**
- * Integration tests for {@link com.sap.cds.feature.datainspector.DataHandler} covering the
+ * Integration tests for {@link com.sap.cds.feature.datainspector.DataReader} covering the
  * non-pagination, non-audit-log scenarios.
  */
-class DataHandlerIT extends AbstractDataInspectorIT {
+class DataReaderIT extends AbstractDataInspectorIT {
 
   // ═════════════════════════════════════════════════════════════
   // Authorization
@@ -271,7 +271,7 @@ class DataHandlerIT extends AbstractDataInspectorIT {
   }
 
   // ═════════════════════════════════════════════════════════════
-  // $skip / $top (basic — server-side pagination lives in DataHandlerPaginationIT)
+  // $skip / $top (basic — server-side pagination lives in DataReaderPaginationIT)
   // ═════════════════════════════════════════════════════════════
 
   @Test
