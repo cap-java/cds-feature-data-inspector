@@ -10,7 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
- * Server-side pagination tests for {@link com.sap.cds.feature.datainspector.DataReader}.
+ * Server-side pagination tests for {@link com.sap.cds.feature.datainspector.handler.DataReader}.
  *
  * <p>The FoodService in the test-app declares {@code @cds.query.limit: { default: 10, max: 20 }}.
  * The DataReader applies these limits when constructing the SQL LIMIT/OFFSET clause; a db-level

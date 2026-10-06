@@ -9,7 +9,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-/** Integration tests for {@link com.sap.cds.feature.datainspector.EntityDefinitionReader}. */
+/**
+ * Integration tests for {@link com.sap.cds.feature.datainspector.handler.EntityDefinitionReader}.
+ */
 class EntityDefinitionReaderIT extends AbstractDataInspectorIT {
 
   // ═════════════════════════════════════════════════════════════

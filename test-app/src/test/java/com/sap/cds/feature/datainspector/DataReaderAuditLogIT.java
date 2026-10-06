@@ -22,7 +22,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Import;
 
 /**
- * Audit-log integration tests for {@link com.sap.cds.feature.datainspector.DataReader}.
+ * Audit-log integration tests for {@link com.sap.cds.feature.datainspector.handler.DataReader}.
  *
  * <p>CAP Java's audit log v2 exposes an {@link AuditLogService} whose typed "logDataAccess" event
  * (event name: {@link DataAccessLogContext#CDS_NAME}) fires for every read of an element annotated

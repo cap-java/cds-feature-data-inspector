@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MvcResult;
 
 /**
- * Integration tests for {@link com.sap.cds.feature.datainspector.DataReader} covering the
+ * Integration tests for {@link com.sap.cds.feature.datainspector.handler.DataReader} covering the
  * non-pagination, non-audit-log scenarios.
  */
 class DataReaderIT extends AbstractDataInspectorIT {
