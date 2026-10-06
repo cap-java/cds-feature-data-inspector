@@ -334,6 +334,26 @@ class EntityDefinitionHandlerIT extends AbstractDataInspectorIT {
         .isEqualTo(r0.get("value").get(7).get("name").asText());
   }
 
+  @Test
+  @DisplayName("GET EntityDefinitions $skip / $top — malformed, negative or overflowing → 400")
+  void skipTopNegativeAndMalformed() throws Exception {
+    // Malformed, negative and out-of-int-range pagination parameters must be rejected with 400,
+    // never escaping as a 500 (see EntityDefinitionHandler.parseNonNegativeInt).
+    for (String query :
+        new String[] {
+          "$top=abc", // non-numeric $top
+          "$skip=abc", // non-numeric $skip
+          "$top=-1", // negative $top
+          "$skip=-1", // negative $skip
+          "$top=99999999999", // overflows int
+          "$skip=99999999999" // overflows int
+        }) {
+      assertThat(getAsAlice("/EntityDefinition?" + query).getResponse().getStatus())
+          .as("invalid pagination parameter '%s' must be rejected with 400", query)
+          .isEqualTo(400);
+    }
+  }
+
   // ═════════════════════════════════════════════════════════════
   // Elements introspection (CdsCoreTypes)
   // ═════════════════════════════════════════════════════════════

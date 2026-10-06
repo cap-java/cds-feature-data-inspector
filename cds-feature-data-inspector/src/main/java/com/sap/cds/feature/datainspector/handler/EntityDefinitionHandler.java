@@ -145,10 +145,32 @@ public class EntityDefinitionHandler implements EventHandler {
       return;
     }
 
-    // Sort (default: name asc), then paginate ($skip, $top)
+    // Sort (default: name asc), then paginate ($skip, $top).
+    // $skip / $top are parsed defensively: malformed, negative or overflowing values are
+    // rejected with 400 rather than escaping as a 500 (NumberFormatException from parseInt or
+    // IllegalArgumentException from Stream.skip/limit). A spec-compliant OData adapter already
+    // rejects most of these upstream, but this keeps the handler self-contained.
     filtered.sort(buildComparator(orderByParam));
-    int skip = skipParam != null ? Integer.parseInt(skipParam) : 0;
-    int top = topParam != null ? Integer.parseInt(topParam) : filtered.size();
+
+    int skip = 0;
+    if (skipParam != null) {
+      try {
+        skip = Integer.parseInt(skipParam);
+      } catch (NumberFormatException e) {
+        throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_SKIP");
+      }
+      if (skip < 0) throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_SKIP");
+    }
+
+    int top = filtered.size();
+    if (topParam != null) {
+      try {
+        top = Integer.parseInt(topParam);
+      } catch (NumberFormatException e) {
+        throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_TOP");
+      }
+      if (top < 0) throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_TOP");
+    }
 
     // Project ($select)
     List<String> selectedColumns = determineSelectedColumns(params);
