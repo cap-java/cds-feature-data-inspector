@@ -11,10 +11,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MvcResult;
 
 /**
- * Integration tests for {@link com.sap.cds.feature.datainspector.DataHandler} covering the
+ * Integration tests for {@link com.sap.cds.feature.datainspector.handler.DataReader} covering the
  * non-pagination, non-audit-log scenarios.
  */
-class DataHandlerIT extends AbstractDataInspectorIT {
+class DataReaderIT extends AbstractDataInspectorIT {
 
   // ═════════════════════════════════════════════════════════════
   // Authorization
@@ -173,6 +173,35 @@ class DataHandlerIT extends AbstractDataInspectorIT {
   }
 
   @Test
+  @DisplayName("GET Data — error codes resolve to localized messages from the i18n bundle")
+  void errorMessagesAreLocalized() throws Exception {
+    MvcResult selRes =
+        getAsAlice(
+            "/Data?$filter=entityName eq 'datainspector.test.db.Product'&r_select=randomName");
+    assertThat(selRes.getResponse().getStatus()).isEqualTo(400);
+    assertThat(json(selRes).get("error").get("message").asText())
+        .as("INVALID_ELEMENT_IN_R_SELECT must resolve to its i18n message, not the raw code")
+        .isEqualTo("Invalid element name supplied in r_select: randomName");
+
+    MvcResult keyRes =
+        getAsAlice("/Data(entityName='datainspector.test.db.Product',recordKey='wrongKey=1')");
+    assertThat(keyRes.getResponse().getStatus()).isEqualTo(400);
+    assertThat(json(keyRes).get("error").get("message").asText())
+        .as("INVALID_RECORD_KEY must resolve and interpolate the bad key via {0}")
+        // CAP Java trims trailing whitespace from the resolved message, so the bundle's
+        // trailing space after {0} (kept for Node parity) does not appear in the output.
+        .isEqualTo("Invalid key in recordKey: wrongKey=1");
+
+    MvcResult filterRes =
+        getAsAlice(
+            "/Data?$filter=entityName eq 'datainspector.test.db.Product'&r_filter=randomName eq 'x'");
+    assertThat(filterRes.getResponse().getStatus()).isEqualTo(400);
+    assertThat(json(filterRes).get("error").get("message").asText())
+        .as("INVALID_ELEMENT_IN_R_FILTER must resolve and interpolate the bad element via {0}")
+        .isEqualTo("Invalid element name supplied in r_filter: randomName");
+  }
+
+  @Test
   @DisplayName("GET Data by ID — key values containing an apostrophe are fetchable")
   void queryByIdWithApostropheInKey() throws Exception {
     // The seed row has composite key values that contain apostrophes (O'Brien, W'026, O'026).
@@ -244,7 +273,7 @@ class DataHandlerIT extends AbstractDataInspectorIT {
   }
 
   // ═════════════════════════════════════════════════════════════
-  // $skip / $top (basic — server-side pagination lives in DataHandlerPaginationIT)
+  // $skip / $top (basic — server-side pagination lives in DataReaderPaginationIT)
   // ═════════════════════════════════════════════════════════════
 
   @Test

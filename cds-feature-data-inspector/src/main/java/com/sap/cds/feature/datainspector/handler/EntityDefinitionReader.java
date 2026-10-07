@@ -43,15 +43,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @ServiceName("DataInspectorService")
-public class EntityDefinitionHandler implements EventHandler {
+public class EntityDefinitionReader implements EventHandler {
 
   private final CdsRuntime runtime;
 
   /**
-   * Runtime is injected via the constructor (see {@link DataHandler} for the DI (dependency
+   * Runtime is injected via the constructor (see {@link DataReader} for the DI (dependency
    * injection) rationale).
    */
-  public EntityDefinitionHandler(CdsRuntime runtime) {
+  public EntityDefinitionReader(CdsRuntime runtime) {
     this.runtime = runtime;
   }
 
@@ -214,7 +214,7 @@ public class EntityDefinitionHandler implements EventHandler {
     if (filter.startsWith("contains(") && !filter.contains(" and ")) {
       FilterParts p = parseContains(filter);
       if (p == null) {
-        throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_FILTER_EXPRESSION");
+        throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_FILTER_PARAM_SINGULAR");
       }
       requireAllowedColumn(p.column());
       return matchContains(p.column(), p.value(), name, title, dataSource);
@@ -224,7 +224,7 @@ public class EntityDefinitionHandler implements EventHandler {
     if (filter.contains(" eq ") && !filter.contains(" and ")) {
       FilterParts p = parseEq(filter);
       if (p == null) {
-        throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_FILTER_EXPRESSION");
+        throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_FILTER_PARAM_SINGULAR");
       }
       requireAllowedColumn(p.column());
       return matchEq(p.column(), p.value(), name, title, dataSource);
@@ -246,13 +246,13 @@ public class EntityDefinitionHandler implements EventHandler {
         containsPart = right;
       } else {
         // Neither side is contains(…): unsupported combined form
-        throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_FILTER_EXPRESSION");
+        throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_FILTER_PARAM_SINGULAR");
       }
 
       FilterParts containsF = parseContains(containsPart);
       FilterParts eqF = parseEq(eqPart);
       if (containsF == null || eqF == null) {
-        throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_FILTER_EXPRESSION");
+        throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_FILTER_PARAM_SINGULAR");
       }
       requireAllowedColumn(containsF.column());
       requireAllowedColumn(eqF.column());
@@ -262,17 +262,17 @@ public class EntityDefinitionHandler implements EventHandler {
     }
 
     // No supported shape matched (e.g. "elements in (…)" or unknown operator)
-    throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_FILTER_EXPRESSION");
+    throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_FILTER_PARAM_SINGULAR");
   }
 
   /**
    * Enforces that a filter clause references one of the supported EntityDefinition columns (name /
    * title / dataSource). Any other column — including the 'elements' collection — is rejected with
-   * 400.
+   * 400 (mirrors the Node.js CANNOT_FILTER_BY_COLUMN check for 'elements').
    */
   private void requireAllowedColumn(String column) {
     if (!Set.of("name", "title", "dataSource").contains(column)) {
-      throw new ServiceException(ErrorStatuses.BAD_REQUEST, "INVALID_FILTER_EXPRESSION");
+      throw new ServiceException(ErrorStatuses.BAD_REQUEST, "CANNOT_FILTER_BY_COLUMN");
     }
   }
 
