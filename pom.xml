@@ -100,6 +100,7 @@
 
   <dependencyManagement>
     <dependencies>
+      <!-- CAP Java BOM: aligns versions of all com.sap.cds:* artifacts (and their deps like jackson) across modules. -->
       <dependency>
         <groupId>com.sap.cds</groupId>
         <artifactId>cds-services-bom</artifactId>
@@ -107,7 +108,7 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      <!-- Spring Boot BOM is intentionally NOT imported here — see spring.boot.version note. -->
+      <!-- JUnit 5 BOM: aligns junit-jupiter versions for tests. Spring Boot BOM is intentionally NOT imported here — see spring.boot.version note. -->
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>

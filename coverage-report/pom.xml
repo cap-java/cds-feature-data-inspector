@@ -17,11 +17,13 @@
         integration-test coverage. Not published.</description>
 
   <dependencies>
+    <!-- Plugin module — its compiled classes are the code we measure coverage for. -->
     <dependency>
       <groupId>com.sap.cds</groupId>
       <artifactId>cds-feature-data-inspector</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!-- Test-app module — pulled in (test scope) so this module builds after it, ensuring its jacoco.exec exists before the merge. -->
     <dependency>
       <groupId>com.sap.cds</groupId>
       <artifactId>cds-feature-data-inspector-test-app</artifactId>

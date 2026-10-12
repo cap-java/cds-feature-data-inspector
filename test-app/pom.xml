@@ -26,6 +26,7 @@
   </properties>
 
   <dependencyManagement>
+    <!-- Spring Boot BOM: aligns all org.springframework.boot:* (and many common libs) to one Spring Boot version. -->
     <dependencies>
       <dependency>
         <groupId>org.springframework.boot</groupId>
@@ -38,56 +39,49 @@
   </dependencyManagement>
 
   <dependencies>
-    <!-- The plugin under test. -->
+    <!-- The plugin under test (this reactor's own module). -->
     <dependency>
       <groupId>com.sap.cds</groupId>
       <artifactId>cds-feature-data-inspector</artifactId>
       <version>${project.version}</version>
     </dependency>
 
+    <!-- CAP Java starter: wires the OData V4 protocol adapter + Spring Boot runtime (the app's web/runtime backbone). -->
     <dependency>
       <groupId>com.sap.cds</groupId>
       <artifactId>cds-starter-spring-boot-odata</artifactId>
     </dependency>
 
+    <!-- SQLite JDBC driver — the local-dev database. -->
     <dependency>
       <groupId>org.xerial</groupId>
       <artifactId>sqlite-jdbc</artifactId>
     </dependency>
+    <!-- CAP Java JDBC persistence feature — lets CAP talk to a relational DB (here SQLite). -->
     <dependency>
       <groupId>com.sap.cds</groupId>
       <artifactId>cds-feature-jdbc</artifactId>
     </dependency>
 
-    <!-- 'cloud' profile only. -->
-    <dependency>
-      <groupId>com.sap.cds</groupId>
-      <artifactId>cds-feature-hana</artifactId>
-      <scope>runtime</scope>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>com.sap.cds</groupId>
-      <artifactId>cds-feature-identity</artifactId>
-      <optional>true</optional>
-    </dependency>
-
+    <!-- Spring Security — provides the mock-user / role-based auth used in local dev and the IT suite. -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
 
-    <!-- Exercised by DataHandlerAuditLogIT. -->
+    <!-- CAP Java audit-logging (v2) feature — exercised by DataReaderAuditLogIT. -->
     <dependency>
       <groupId>com.sap.cds</groupId>
       <artifactId>cds-feature-auditlog-v2</artifactId>
     </dependency>
 
+    <!-- Test: Spring Boot test starter — JUnit 5, AssertJ, Mockito, MockMvc for the @SpringBootTest IT suite. -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- Test: Spring Security test helpers — e.g. httpBasic() to authenticate MockMvc requests. -->
     <dependency>
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-test</artifactId>
