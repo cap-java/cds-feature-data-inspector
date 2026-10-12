@@ -97,17 +97,19 @@ public class DataReader implements EventHandler {
           .registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule())
           .disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-  /**
-   * Collaborators are received as constructor parameters (dependency injection), the idiomatic CAP
-   * Java style. Unlike Node.js — where a handler reaches global singletons such as {@code
-   * cds.services.db} or {@code cds.model} directly — CAP Java has no such globals; services come
-   * from the {@link CdsRuntime}, which {@code Registration} obtains at startup and passes in here.
-   * This also keeps the handler testable (the tests supply their own services).
-   */
-  public DataReader(CdsRuntime runtime, PersistenceService db, AuditLogService auditLogService) {
+  public DataReader(CdsRuntime runtime) {
     this.runtime = runtime;
-    this.db = db;
-    this.auditLogService = auditLogService;
+    this.db =
+        runtime
+            .getServiceCatalog()
+            .getService(PersistenceService.class, PersistenceService.DEFAULT_NAME);
+
+    // Optional: null when cds-feature-auditlog-v2 is absent (audit emission disabled).
+    this.auditLogService =
+        runtime.getServiceCatalog().getService(AuditLogService.class, AuditLogService.DEFAULT_NAME);
+    if (this.auditLogService == null) {
+      log.warn("AuditLogService not available");
+    }
   }
 
   // ── Main handler ─────────────────────────────────────────────────────────────
