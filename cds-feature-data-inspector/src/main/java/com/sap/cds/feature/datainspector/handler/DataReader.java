@@ -108,7 +108,7 @@ public class DataReader implements EventHandler {
     this.auditLogService =
         runtime.getServiceCatalog().getService(AuditLogService.class, AuditLogService.DEFAULT_NAME);
     if (this.auditLogService == null) {
-      log.warn("AuditLogService not available");
+      log.debug("AuditLogService not available; audit-log emission disabled.");
     }
   }
 
