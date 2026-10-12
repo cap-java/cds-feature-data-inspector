@@ -34,6 +34,16 @@ To use the SAPUI5 app or `cds add data-inspector`, additionally install the Node
 npm install --save-dev @cap-js/data-inspector
 ```
 
+Then disable the Node.js plugin's CDS model contribution by adding `"@cap-js/data-inspector": false` under `cds.requires` in your host app's `.cdsrc.json` or the `cds` block in `package.json`:
+
+```json
+{
+  "requires": {
+    "@cap-js/data-inspector": false
+  }
+}
+```
+
 ### Run
 
 Run it with
@@ -122,6 +132,8 @@ The `Bar` entity is not revealed by the Data Inspector.
    ```sh
    npm install --save-dev @cap-js/data-inspector
    ```
+
+   Then add `"@cap-js/data-inspector": false` under `cds.requires` in your `.cdsrc.json` (or `package.json`) to avoid a duplicate `DataInspectorService` definition — see [Installation](#installation) for details.
 
 3. Set up the `xsuaa` SAP BTP service for authorization.
 4. Optionally, use CAP Java's [audit logging](https://cap.cloud.sap/docs/java/auditlog) and the `auditlog` SAP BTP service for audit logging.

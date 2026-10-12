@@ -17,57 +17,34 @@
         auto-registered via META-INF/services/…CdsRuntimeConfiguration — no further
         wiring required.
     -->
+  <!-- organization / licenses / developers / scm are inherited from the published parent (-root) POM. -->
   <artifactId>cds-feature-data-inspector</artifactId>
   <packaging>jar</packaging>
   <name>CDS Feature: Data Inspector</name>
   <description>CAP Java plugin: OData services to browse CDS entity definitions and live data.</description>
   <url>https://github.com/cap-java/cds-feature-data-inspector</url>
 
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
-
-  <developers>
-    <developer>
-      <organization>SAP SE</organization>
-      <organizationUrl>https://www.sap.com</organizationUrl>
-    </developer>
-  </developers>
-
-  <scm>
-    <connection>scm:git:git@github.com:cap-java/cds-feature-data-inspector.git</connection>
-    <developerConnection>scm:git:git@github.com:cap-java/cds-feature-data-inspector.git</developerConnection>
-    <url>https://github.com/cap-java/cds-feature-data-inspector</url>
-  </scm>
-
-  <properties>
-    <!-- The ONLY published module: override the root's maven.deploy.skip=true. -->
-    <maven.deploy.skip>false</maven.deploy.skip>
-  </properties>
-
   <dependencies>
-    <!-- Core CAP Java runtime API. Also provides slf4j-api transitively (not declared here). -->
+    <!-- CAP Java runtime API — the interfaces/annotations this plugin's handlers are built on (EventHandler, CqnService, CdsModel, …). Also pulls slf4j-api transitively. -->
     <dependency>
       <groupId>com.sap.cds</groupId>
       <artifactId>cds-services-api</artifactId>
     </dependency>
 
-    <!-- JavaTimeModule for ISO-8601 java.time.* in the 'record' JSON. Explicit version: not managed by cds-services-bom. -->
+    <!-- Jackson module to serialise java.time.* as ISO-8601 in the 'record' JSON. Explicit version: not managed by cds-services-bom. -->
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
       <version>${jackson.jsr310.version}</version>
     </dependency>
 
+    <!-- Test: JUnit 5 test framework (version from junit-bom). -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- Test: AssertJ fluent assertions. -->
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
@@ -75,7 +52,7 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- Initialises com.sap.cds.ql.CQL in RFilterParserTest; not managed by cds-services-bom. -->
+    <!-- Test: CAP Java (cds4j) runtime, needed to initialise com.sap.cds.ql.CQL in RFilterParserTest; not managed by cds-services-bom. -->
     <dependency>
       <groupId>com.sap.cds</groupId>
       <artifactId>cds4j-runtime</artifactId>

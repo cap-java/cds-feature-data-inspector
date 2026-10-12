@@ -47,10 +47,6 @@ public class EntityDefinitionReader implements EventHandler {
 
   private final CdsRuntime runtime;
 
-  /**
-   * Runtime is injected via the constructor (see {@link DataReader} for the DI (dependency
-   * injection) rationale).
-   */
   public EntityDefinitionReader(CdsRuntime runtime) {
     this.runtime = runtime;
   }

@@ -17,11 +17,13 @@
         integration-test coverage. Not published.</description>
 
   <dependencies>
+    <!-- Plugin module — its compiled classes are the code we measure coverage for. -->
     <dependency>
       <groupId>com.sap.cds</groupId>
       <artifactId>cds-feature-data-inspector</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!-- Test-app module — pulled in (test scope) so this module builds after it, ensuring its jacoco.exec exists before the merge. -->
     <dependency>
       <groupId>com.sap.cds</groupId>
       <artifactId>cds-feature-data-inspector-test-app</artifactId>
@@ -32,6 +34,7 @@
 
   <build>
     <plugins>
+      <!-- Never publish this aggregation module to a repository. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-deploy-plugin</artifactId>
@@ -64,6 +67,7 @@
         </executions>
       </plugin>
 
+      <!-- Merges the two modules' coverage, builds the aggregate report, and enforces the coverage gate. -->
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>

@@ -46,7 +46,8 @@
     <module>coverage-report</module>
   </modules>
 
-  <scm>
+  <!-- append.path="false": children inherit these SCM URLs verbatim (no module path appended → no doubled path in the published plugin POM). -->
+  <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
     <connection>scm:git:git@github.com:cap-java/cds-feature-data-inspector.git</connection>
     <developerConnection>scm:git:git@github.com:cap-java/cds-feature-data-inspector.git</developerConnection>
     <url>https://github.com/cap-java/cds-feature-data-inspector</url>
@@ -89,20 +90,18 @@
     <junit.bom.version>6.1.3</junit.bom.version>
 
     <!-- Not managed by cds-services-bom; pinned explicitly. -->
-    <assertj.version>3.27.3</assertj.version>
+    <assertj.version>3.27.7</assertj.version>
 
     <!-- Not managed by cds-services-bom; keep aligned with CAP's jackson line to avoid a split-version classpath. -->
     <jackson.jsr310.version>2.22.2</jackson.jsr310.version>
 
     <!-- Skip Spotless `check` in normal builds; run `mvn spotless:apply`/`:check` on demand. -->
     <spotless.check.skip>true</spotless.check.skip>
-
-    <!-- Skip deploy for ALL modules by default; the plugin module overrides to false so only it is published. -->
-    <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
 
   <dependencyManagement>
     <dependencies>
+      <!-- CAP Java BOM: aligns versions of all com.sap.cds:* artifacts (and their deps like jackson) across modules. -->
       <dependency>
         <groupId>com.sap.cds</groupId>
         <artifactId>cds-services-bom</artifactId>
@@ -110,7 +109,7 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      <!-- Spring Boot BOM is intentionally NOT imported here — see spring.boot.version note. -->
+      <!-- JUnit 5 BOM: aligns junit-jupiter versions for tests. Spring Boot BOM is intentionally NOT imported here — see spring.boot.version note. -->
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
@@ -121,64 +120,78 @@
     </dependencies>
   </dependencyManagement>
 
+  <!--
+        pluginManagement = a version/config CATALOG only; nothing runs here. Child modules
+        (and this pom's <build><plugins>) reference these plugins without repeating versions.
+    -->
   <build>
     <pluginManagement>
       <plugins>
+        <!-- Compiles Java sources (to the Java release set above). -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.13.0</version>
+          <version>3.16.0</version>
           <configuration>
             <release>${maven.compiler.release}</release>
           </configuration>
         </plugin>
+        <!-- Runs unit tests (*Test.java) in the `test` phase. -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.5.2</version>
+          <version>3.6.0</version>
         </plugin>
+        <!-- Runs integration tests (*IT.java) in the `integration-test`/`verify` phases. -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>3.5.2</version>
+          <version>3.6.0</version>
         </plugin>
+        <!-- Enforces build rules (min Maven/Java version, no duplicate deps). -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-enforcer-plugin</artifactId>
-          <version>3.5.0</version>
+          <version>3.6.3</version>
         </plugin>
+        <!-- Uploads artifacts to a repository on `mvn deploy`. -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
-          <version>3.1.4</version>
+          <version>3.2.0</version>
         </plugin>
-        <!-- Source/javadoc/gpg/central-publishing: used by the deploy-release profile. -->
+        <!-- Builds the sources jar (Central requirement); used by the deploy-release profile. -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-source-plugin</artifactId>
-          <version>3.3.1</version>
+          <version>3.4.0</version>
         </plugin>
+        <!-- Builds the javadoc jar (Central requirement); used by the deploy-release profile. -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>3.11.2</version>
+          <version>3.12.0</version>
         </plugin>
+        <!-- GPG-signs artifacts (Central requirement); used by the deploy-release profile. -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-gpg-plugin</artifactId>
-          <version>3.2.7</version>
+          <version>3.2.8</version>
         </plugin>
+        <!-- Publishes to Maven Central via the Sonatype Central Portal. -->
         <plugin>
           <groupId>org.sonatype.central</groupId>
           <artifactId>central-publishing-maven-plugin</artifactId>
-          <version>0.7.0</version>
+          <version>0.11.0</version>
           <extensions>true</extensions>
         </plugin>
+        <!-- Resolves CI-friendly ${revision} into the published POM. -->
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>flatten-maven-plugin</artifactId>
-          <version>1.6.0</version>
+          <version>1.8.0</version>
         </plugin>
+        <!-- Repackages the test-app into a runnable Spring Boot jar (`spring-boot:run`/repackage). -->
         <plugin>
           <groupId>org.springframework.boot</groupId>
           <artifactId>spring-boot-maven-plugin</artifactId>
@@ -190,6 +203,7 @@
           <artifactId>cds-maven-plugin</artifactId>
           <version>${cds.services.version}</version>
         </plugin>
+        <!-- Measures test coverage (per-module exec files, merged by coverage-report). -->
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
@@ -253,7 +267,7 @@
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
-        <version>3.6.0</version>
+        <version>3.10.4</version>
         <configuration>
           <java>
             <googleJavaFormat>
@@ -287,8 +301,9 @@
   <profiles>
     <!--
             Maven Central release (`mvn deploy -Pdeploy-release`): attach sources+javadoc,
-            GPG-sign, publish via central-publishing. excludeArtifacts ensures only the
-            plugin JAR is uploaded (root/test-app/coverage-report are not).
+            GPG-sign, publish via central-publishing. The parent (-root) POM is published
+            too so the plugin can inherit org/license/scm/developers from it;
+            excludeArtifacts keeps the non-publishable test-app and coverage-report off Central.
         -->
     <profile>
       <id>deploy-release</id>
@@ -340,7 +355,6 @@
             <configuration>
               <publishingServerId>central</publishingServerId>
               <excludeArtifacts>
-                <excludeArtifact>cds-feature-data-inspector-root</excludeArtifact>
                 <excludeArtifact>cds-feature-data-inspector-test-app</excludeArtifact>
                 <excludeArtifact>cds-feature-data-inspector-coverage-report</excludeArtifact>
               </excludeArtifacts>

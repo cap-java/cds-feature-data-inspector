@@ -1,11 +1,9 @@
 # Test-app configuration.
-# Mirrors the "cds" block in the Node.js project's package.json:
 #   - Mock authentication for local dev
 #   - alice user with the plugin's read role
 #   - bob user without the role (used by integration tests for 403 checks)
 #   - SQLite datasource for local dev
-#   - HANA + XSUAA profile stub for BTP deployment
-#   - In-memory audit log service (used by DataInspectorAuditLogIT)
+#   - In-memory audit log service (used by DataReaderAuditLogIT)
 
 server:
   port: 8080
@@ -56,23 +54,6 @@ spring:
     hikari:
       # SQLite supports only one writer at a time
       maximum-pool-size: 1
-
----
-# Cloud / BTP profile: HANA + XSUAA
-# Activate with: --spring.profiles.active=cloud
-spring:
-  config:
-    activate:
-      on-profile: cloud
-
-cds:
-  security:
-    mock:
-      enabled: false
-    authentication:
-      normalize-proof-tokens: true
-  dataSource:
-    binding-based: true
 
 ---
 logging:
