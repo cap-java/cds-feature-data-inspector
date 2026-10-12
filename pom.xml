@@ -96,9 +96,6 @@
 
     <!-- Skip Spotless `check` in normal builds; run `mvn spotless:apply`/`:check` on demand. -->
     <spotless.check.skip>true</spotless.check.skip>
-
-    <!-- Skip deploy for ALL modules by default; the plugin module overrides to false so only it is published. -->
-    <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
 
   <dependencyManagement>
@@ -177,7 +174,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>flatten-maven-plugin</artifactId>
-          <version>1.6.0</version>
+          <version>1.8.0</version>
         </plugin>
         <plugin>
           <groupId>org.springframework.boot</groupId>
@@ -287,8 +284,9 @@
   <profiles>
     <!--
             Maven Central release (`mvn deploy -Pdeploy-release`): attach sources+javadoc,
-            GPG-sign, publish via central-publishing. excludeArtifacts ensures only the
-            plugin JAR is uploaded (root/test-app/coverage-report are not).
+            GPG-sign, publish via central-publishing. The parent (-root) POM is published
+            too so the plugin can inherit org/license/scm/developers from it;
+            excludeArtifacts keeps the non-publishable test-app and coverage-report off Central.
         -->
     <profile>
       <id>deploy-release</id>
@@ -340,7 +338,6 @@
             <configuration>
               <publishingServerId>central</publishingServerId>
               <excludeArtifacts>
-                <excludeArtifact>cds-feature-data-inspector-root</excludeArtifact>
                 <excludeArtifact>cds-feature-data-inspector-test-app</excludeArtifact>
                 <excludeArtifact>cds-feature-data-inspector-coverage-report</excludeArtifact>
               </excludeArtifacts>

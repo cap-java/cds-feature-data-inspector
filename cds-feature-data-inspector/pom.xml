@@ -17,37 +17,12 @@
         auto-registered via META-INF/services/…CdsRuntimeConfiguration — no further
         wiring required.
     -->
+  <!-- organization / licenses / developers / scm are inherited from the published parent (-root) POM. -->
   <artifactId>cds-feature-data-inspector</artifactId>
   <packaging>jar</packaging>
   <name>CDS Feature: Data Inspector</name>
   <description>CAP Java plugin: OData services to browse CDS entity definitions and live data.</description>
   <url>https://github.com/cap-java/cds-feature-data-inspector</url>
-
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
-
-  <developers>
-    <developer>
-      <organization>SAP SE</organization>
-      <organizationUrl>https://www.sap.com</organizationUrl>
-    </developer>
-  </developers>
-
-  <scm>
-    <connection>scm:git:git@github.com:cap-java/cds-feature-data-inspector.git</connection>
-    <developerConnection>scm:git:git@github.com:cap-java/cds-feature-data-inspector.git</developerConnection>
-    <url>https://github.com/cap-java/cds-feature-data-inspector</url>
-  </scm>
-
-  <properties>
-    <!-- The ONLY published module: override the root's maven.deploy.skip=true. -->
-    <maven.deploy.skip>false</maven.deploy.skip>
-  </properties>
 
   <dependencies>
     <!-- Core CAP Java runtime API. Also provides slf4j-api transitively (not declared here). -->
