@@ -20,9 +20,6 @@
 
   <properties>
     <cds.output.dir>${project.build.directory}/cds</cds.output.dir>
-
-    <!-- Never publish the test-app. -->
-    <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
 
   <dependencyManagement>
@@ -95,6 +92,15 @@
     <finalName>cds-feature-data-inspector-test-app</finalName>
 
     <plugins>
+      <!-- Never publish the sample test-app. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+
       <!-- classifier=exec keeps the thin jar as the primary artifact (failsafe's test classpath); the fat jar becomes `…-exec.jar`. Without it, repackage breaks `mvn verify`. -->
       <plugin>
         <groupId>org.springframework.boot</groupId>

@@ -34,6 +34,7 @@
 
   <build>
     <plugins>
+      <!-- Never publish this aggregation module to a repository. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-deploy-plugin</artifactId>
@@ -66,6 +67,7 @@
         </executions>
       </plugin>
 
+      <!-- Merges the two modules' coverage, builds the aggregate report, and enforces the coverage gate. -->
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>

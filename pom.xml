@@ -119,9 +119,14 @@
     </dependencies>
   </dependencyManagement>
 
+  <!--
+        pluginManagement = a version/config CATALOG only; nothing runs here. Child modules
+        (and this pom's <build><plugins>) reference these plugins without repeating versions.
+    -->
   <build>
     <pluginManagement>
       <plugins>
+        <!-- Compiles Java sources (to the Java release set above). -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
@@ -130,53 +135,62 @@
             <release>${maven.compiler.release}</release>
           </configuration>
         </plugin>
+        <!-- Runs unit tests (*Test.java) in the `test` phase. -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>3.6.0</version>
         </plugin>
+        <!-- Runs integration tests (*IT.java) in the `integration-test`/`verify` phases. -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
           <version>3.6.0</version>
         </plugin>
+        <!-- Enforces build rules (min Maven/Java version, no duplicate deps). -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-enforcer-plugin</artifactId>
           <version>3.6.3</version>
         </plugin>
+        <!-- Uploads artifacts to a repository on `mvn deploy`. -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
           <version>3.2.0</version>
         </plugin>
-        <!-- Source/javadoc/gpg/central-publishing: used by the deploy-release profile. -->
+        <!-- Builds the sources jar (Central requirement); used by the deploy-release profile. -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-source-plugin</artifactId>
           <version>3.4.0</version>
         </plugin>
+        <!-- Builds the javadoc jar (Central requirement); used by the deploy-release profile. -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>3.12.0</version>
         </plugin>
+        <!-- GPG-signs artifacts (Central requirement); used by the deploy-release profile. -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-gpg-plugin</artifactId>
           <version>3.2.8</version>
         </plugin>
+        <!-- Publishes to Maven Central via the Sonatype Central Portal. -->
         <plugin>
           <groupId>org.sonatype.central</groupId>
           <artifactId>central-publishing-maven-plugin</artifactId>
           <version>0.11.0</version>
           <extensions>true</extensions>
         </plugin>
+        <!-- Resolves CI-friendly ${revision} into the published POM. -->
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>flatten-maven-plugin</artifactId>
           <version>1.8.0</version>
         </plugin>
+        <!-- Repackages the test-app into a runnable Spring Boot jar (`spring-boot:run`/repackage). -->
         <plugin>
           <groupId>org.springframework.boot</groupId>
           <artifactId>spring-boot-maven-plugin</artifactId>
@@ -188,6 +202,7 @@
           <artifactId>cds-maven-plugin</artifactId>
           <version>${cds.services.version}</version>
         </plugin>
+        <!-- Measures test coverage (per-module exec files, merged by coverage-report). -->
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
