@@ -46,7 +46,8 @@
     <module>coverage-report</module>
   </modules>
 
-  <scm>
+  <!-- append.path="false": children inherit these SCM URLs verbatim (no module path appended → no doubled path in the published plugin POM). -->
+  <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
     <connection>scm:git:git@github.com:cap-java/cds-feature-data-inspector.git</connection>
     <developerConnection>scm:git:git@github.com:cap-java/cds-feature-data-inspector.git</developerConnection>
     <url>https://github.com/cap-java/cds-feature-data-inspector</url>
