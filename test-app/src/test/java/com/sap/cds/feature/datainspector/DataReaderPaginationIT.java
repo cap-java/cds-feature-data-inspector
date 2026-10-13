@@ -22,10 +22,9 @@ import org.junit.jupiter.api.Test;
  *
  * <p>Note on {@code @odata.nextLink}: the CAP Java OData adapter does not emit a nextLink for this
  * virtual, {@code @cds.persistence.skip} Data entity, and an {@code @On} handler has no hook to add
- * one. The handler still computes the next-page offset internally (see {@code
- * DataReader.computeNextLinkOffset}) but it is not surfaced to the client, so these tests never
- * assert on it. Clients paginate by passing {@code $skiptoken=<offset>} explicitly; truncation is
- * verified behaviourally in {@link #truncationReachableViaSkiptoken()}.
+ * one. The handler therefore does not compute one, so these tests never assert on it. Clients
+ * paginate by passing {@code $skiptoken=<offset>} explicitly; truncation is verified behaviourally
+ * in {@link #truncationReachableViaSkiptoken()}.
  *
  * <p>The Food data set has exactly 100 rows and 19 of them contain "Rice" in the ingredients column
  * (verified from the CSV at test scaffolding time).
