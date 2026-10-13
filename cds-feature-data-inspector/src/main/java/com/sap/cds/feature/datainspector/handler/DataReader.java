@@ -231,34 +231,17 @@ public class DataReader implements EventHandler {
       throw new ServiceException(ErrorStatuses.SERVER_ERROR, "ERROR_RUNNING_DB_QUERY");
     }
 
-    // Find count of records — run the COUNT query exactly once and cache it.
-    long totalCount;
-    try {
-      Result countResult = dataSource.run(buildCountQuery(rc));
-      if (countResult.iterator().hasNext()) {
-        Object val = countResult.iterator().next().get("count");
-        totalCount = val instanceof Number n ? n.longValue() : 0L;
-      } else {
-        totalCount = 0L;
-      }
-    } catch (ServiceException e) {
-      // Preserve the original status (e.g. 403 when the inspected service rejects the user)
-      throw e;
-    } catch (Exception e) {
-      log.error("Count query failed for {}: {}", entity.getQualifiedName(), e.getMessage());
-      throw new ServiceException(ErrorStatuses.SERVER_ERROR, "ERROR_RUNNING_DB_QUERY");
-    }
-    rc.totalCount = totalCount;
-
     // By-key request with no match → 404
     if (isByKey && result.rowCount() == 0) {
       context.setResult(Collections.emptyList());
       return;
     }
 
+    long totalCount = result.inlineCount();
+
     // Compute the server-side @odata.nextLink offset.
     // KNOWN LIMITATION — the value computed here is NOT emitted in the OData response.
-    Long nextLinkOffset = computeNextLinkOffset(rc, dataSource);
+    Long nextLinkOffset = computeNextLinkOffset(rc, totalCount, dataSource);
     if (nextLinkOffset != null) {
       context.put("$nextLink", nextLinkOffset);
     }
@@ -306,15 +289,12 @@ public class DataReader implements EventHandler {
    * nextLink Case 3: Default < max < $top => Provide nextLink Case 4: No $top = default => Provide
    * nextLink if $count > default Case 5: $top = 0 => no nextLink
    */
-  private Long computeNextLinkOffset(RequestContext rc, CqnService dataSource) {
+  private Long computeNextLinkOffset(RequestContext rc, long totalCount, CqnService dataSource) {
     CdsEntity entity = rc.entity;
     ParameterInfo params = rc.params;
     long maxPageSize = rc.maxPageSize();
     long defaultPageSize = rc.defaultPageSize();
     String topParam = params.getQueryParameter("$top");
-
-    // Reuse the total count already computed (and cached) in executeAndRespond.
-    long totalCount = rc.totalCount;
 
     boolean truncated =
         (topParam != null && Long.parseLong(topParam) > maxPageSize) // case 3
@@ -447,16 +427,6 @@ public class DataReader implements EventHandler {
         throw new ServiceException(ErrorStatuses.SERVER_ERROR, "Error emitting the audit log");
       }
     }
-  }
-
-  /**
-   * Builds a COUNT(*) query with the same WHERE clause as the main query but no LIMIT/OFFSET,
-   * giving the true total for @odata.count.
-   */
-  private CqnSelect buildCountQuery(RequestContext rc) {
-    var select = Select.from(rc.entity.getQualifiedName()).columns(CQL.count().as("count"));
-    applyRFilter(select, rc);
-    return select;
   }
 
   /**
@@ -756,9 +726,6 @@ public class DataReader implements EventHandler {
     private CqnPredicate parsedRFilter;
     private Long maxPageSize;
     private Long defaultPageSize;
-
-    /** Total matching row count; set once by executeAndRespond after the COUNT query. */
-    private long totalCount;
 
     RequestContext(CdsEntity entity, ParameterInfo params, CqnPredicate keyPredicate) {
       this.entity = entity;
