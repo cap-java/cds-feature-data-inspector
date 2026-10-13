@@ -229,4 +229,60 @@ class RFilterParserTest {
     assertThat(predicate).isNotNull();
     assertThat(predicate.toJson()).contains("anyKey");
   }
+
+  // ── Input-bound guards (DoS / ReDoS safety) ─────────────────────────────────
+  // These are fail-closed functional tests: pathological / oversized input must be
+  // rejected quickly with a 400-mapped FilterParseException rather than consuming
+  // unbounded CPU or overflowing the stack.
+
+  @Test
+  @DisplayName("filter longer than MAX_FILTER_LENGTH is rejected → 400")
+  void overLengthFilterRejected() {
+    // A single clause whose value is padded beyond the 5000-char length bound.
+    String huge = "productName eq '" + "a".repeat(6000) + "'";
+    assertThatThrownBy(() -> RFilterParser.parse(huge, ALLOWED))
+        .isInstanceOf(FilterParseException.class)
+        .extracting(e -> ((FilterParseException) e).getCode())
+        .isEqualTo("INVALID_R_FILTER_QUERY_PARAM");
+  }
+
+  @Test
+  @DisplayName("filter with more than MAX_TOKENS tokens is rejected → 400")
+  void tooManyTokensRejected() {
+    // Build "quantity gt 0 or quantity gt 1 or … " with enough clauses that the
+    // clause + 'or' tokens exceed the 300-token bound (200 clauses → ~399 tokens).
+    StringBuilder sb = new StringBuilder("quantity gt 0");
+    for (int i = 1; i < 200; i++) {
+      sb.append(" or quantity gt ").append(i);
+    }
+    assertThatThrownBy(() -> RFilterParser.parse(sb.toString(), ALLOWED))
+        .isInstanceOf(FilterParseException.class)
+        .extracting(e -> ((FilterParseException) e).getCode())
+        .isEqualTo("INVALID_R_FILTER_QUERY_PARAM");
+  }
+
+  @Test
+  @DisplayName("deeply nested but within token budget still parses (no StackOverflowError)")
+  void deeplyNestedWithinBudgetParses() {
+    // 80 levels of redundant parentheses: 160 paren tokens + the inner clause stay
+    // well under MAX_TOKENS, and recursion depth ~80 is far below any stack limit.
+    // This documents that the token bound keeps nesting safe without a depth guard.
+    int depth = 80;
+    String filter = "(".repeat(depth) + "quantity gt 5" + ")".repeat(depth);
+    CqnPredicate predicate = RFilterParser.parse(filter, ALLOWED);
+    assertThat(predicate).isNotNull();
+    assertThat(predicate.toJson()).contains("quantity");
+  }
+
+  @Test
+  @DisplayName("a large but within-bounds filter still parses successfully")
+  void withinBoundsFilterParses() {
+    // 100 clauses → ~199 tokens, under the 300-token bound: must parse, not reject.
+    StringBuilder sb = new StringBuilder("quantity gt 0");
+    for (int i = 1; i < 100; i++) {
+      sb.append(" or quantity gt ").append(i);
+    }
+    CqnPredicate predicate = RFilterParser.parse(sb.toString(), ALLOWED);
+    assertThat(predicate).isNotNull();
+  }
 }
