@@ -239,13 +239,6 @@ public class DataReader implements EventHandler {
 
     long totalCount = result.inlineCount();
 
-    // Compute the server-side @odata.nextLink offset.
-    // KNOWN LIMITATION — the value computed here is NOT emitted in the OData response.
-    Long nextLinkOffset = computeNextLinkOffset(rc, totalCount, dataSource);
-    if (nextLinkOffset != null) {
-      context.put("$nextLink", nextLinkOffset);
-    }
-
     List<String> selectedColumns = determineSelectedColumnsForData(params);
     boolean includeRecord = selectedColumns.contains("*") || selectedColumns.contains("record");
 
@@ -278,60 +271,6 @@ public class DataReader implements EventHandler {
     // from overwriting our result.
     context.put("result", ResultBuilder.selectedRows(rows).inlineCount(totalCount).result());
     context.setCompleted();
-  }
-
-  // ── nextLink computation ─────────────────────────────────────────────────────
-
-  /**
-   * Computes the next-page offset for @odata.nextLink, or {@code null} when there is no next page.
-   * nextLink should occur when the result set is truncated due to default or max page size limit 5
-   * cases possible: Case 1: Default < $top < max => no nextLink Case 2: $top < default < max => no
-   * nextLink Case 3: Default < max < $top => Provide nextLink Case 4: No $top = default => Provide
-   * nextLink if $count > default Case 5: $top = 0 => no nextLink
-   */
-  private Long computeNextLinkOffset(RequestContext rc, long totalCount, CqnService dataSource) {
-    CdsEntity entity = rc.entity;
-    ParameterInfo params = rc.params;
-    long maxPageSize = rc.maxPageSize();
-    long defaultPageSize = rc.defaultPageSize();
-    String topParam = params.getQueryParameter("$top");
-
-    boolean truncated =
-        (topParam != null && Long.parseLong(topParam) > maxPageSize) // case 3
-            || (topParam == null && totalCount > defaultPageSize); // case 4
-    if (!truncated) return null;
-
-    long limit = defaultPageSize;
-    if (topParam != null) {
-      limit = Math.min(Long.parseLong(topParam), maxPageSize);
-    }
-    long nextOffset = computeOffset(params) + limit;
-
-    // Probe: does a next page actually exist? Keys-only SELECT with the same
-    // WHERE/ORDER BY, limited to 1 row at nextOffset.
-    try {
-      CqnSelect probe = buildNextPageProbeQuery(rc, nextOffset);
-      Result probeResult = dataSource.run(probe);
-      return probeResult.rowCount() > 0 ? nextOffset : null;
-    } catch (ServiceException e) {
-      // Preserve the original status (e.g. 403 when the inspected service rejects the user)
-      throw e;
-    } catch (Exception e) {
-      log.error("Next-page probe failed for {}: {}", entity.getQualifiedName(), e.getMessage());
-      throw new ServiceException(ErrorStatuses.SERVER_ERROR, "ERROR_RUNNING_DB_QUERY");
-    }
-  }
-
-  /**
-   * Builds the keys-only next-page probe: SELECT keys FROM entity [WHERE r_filter] [ORDER BY
-   * r_orderby] LIMIT 1 OFFSET nextOffset.
-   */
-  private CqnSelect buildNextPageProbeQuery(RequestContext rc, long nextOffset) {
-    var select =
-        Select.from(rc.entity.getQualifiedName()).columns(rc.keyElements().toArray(String[]::new));
-    applyRFilter(select, rc);
-    applyROrderBy(select, rc.recordElements(), rc.params);
-    return select.limit(1, nextOffset);
   }
 
   // ── Audit log emission
