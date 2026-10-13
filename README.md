@@ -6,7 +6,12 @@
 
 `cds-feature-data-inspector` is a plugin to **view data** of CAP Java applications.
 
-This plugin focuses on the CAP Java runtime: it provides the Data Inspector OData **service definition and handler implementations**. The SAPUI5 app and the `cds add data-inspector` command are provided by the Node.js [`@cap-js/data-inspector`](https://www.npmjs.com/package/@cap-js/data-inspector) plugin. A CAP Java consumer therefore gets the full experience by combining the two: this CAP Java plugin (added as a Maven dependency) for the runtime, and `@cap-js/data-inspector` (as a **devDependency**) for the UI via `cds build` and the project wiring via `cds add`. See [Setup for BTP](#setup-for-btp) and [Accessing the UI Locally](#accessing-the-ui-locally).
+This plugin focuses on the CAP Java runtime: it provides the Data Inspector OData **service definition and handler implementations**. The SAPUI5 app and the `cds add data-inspector` command are provided by the Node.js [`@cap-js/data-inspector`](https://www.npmjs.com/package/@cap-js/data-inspector) plugin. A CAP Java consumer therefore gets the full experience by combining the two: 
+
+- This CAP Java plugin (added as a Maven dependency) for the runtime
+- `@cap-js/data-inspector` (as a **devDependency**) for the UI using `cds build` and the project wiring using `cds add`.
+
+For more information, see [Setup for SAP BTP](#setup-for-sap-btp) and [Accessing the UI Locally](#accessing-the-ui-locally).
 
 ## Quick Start
 
@@ -46,24 +51,24 @@ Then disable the Node.js plugin's CDS model contribution by adding `"@cap-js/dat
 
 ### Run
 
-Run it with
+Run it with the following command:
 
 ```sh
 mvn spring-boot:run
 ```
 
 - The Data Inspector OData service is served at `http://localhost:8080/odata/v4/data-inspector/`.
-- When asked for a user, use the credentials of a mock user that has the `capDataInspectorReadonly` role (e.g. `alice` with password `alice`, depending on your mock-user configuration). See [Authorization](#authorization).
+- When asked for a user, use the credentials of a mock user that has the `capDataInspectorReadonly` role, for example, `alice` with password `alice`, depending on your mock-user configuration. For more information, see [Authorization](#authorization).
 
-> **Note:** Mock users are for local testing only. For production deployments, always configure proper authentication via XSUAA. See [Authorization](#authorization).
+> **Note:** Mock users are for local testing only. For production deployments, always configure proper authentication using XSUAA. For more information, see [Authorization](#authorization).
 
-The SAPUI5 app runs as its own app (served from the HTML5 Application Repository on BTP, or via `ui5 serve` locally), talking to this OData service — see [Accessing the UI Locally](#accessing-the-ui-locally).
+The SAPUI5 app runs as its own app (served from the HTML5 Application Repository on SAP BTP, or using `ui5 serve` locally), talking to this OData service. For more information, see [Accessing the UI Locally](#accessing-the-ui-locally).
 
 ## Features
 
-- Exclude specific entities and elements from being exposed by the plugin. See [Excluding Entities and Elements](#excluding-entities-and-elements).
-- Automatically log access to sensitive personal data using CAP Java's audit logging. See [Audit Logging](#audit-logging).
-- Provide `xsuaa` scope for access control. See [Authorization](#authorization).
+- Exclude specific entities and elements from being exposed by the plugin. For more information, see [Excluding Entities and Elements](#excluding-entities-and-elements).
+- Automatically log access to sensitive personal data using CAP Java's audit logging. For more information, see [Audit Logging](#audit-logging).
+- Provide `xsuaa` scope for access control. For more information, see [Authorization](#authorization).
 
 > **Note:** The SAPUI5 app is identical to the one shipped by the Node.js plugin. For a tour of the UI, see [The UI at a Glance](https://github.com/cap-js/data-inspector#the-ui-at-a-glance) in the `@cap-js/data-inspector` README.
 
@@ -71,13 +76,13 @@ The SAPUI5 app runs as its own app (served from the HTML5 Application Repository
 
 The SAPUI5 app runs as a standalone UI5 app that talks to this plugin's OData service. It is produced by `cds build` from the Node.js [`@cap-js/data-inspector`](https://github.com/cap-js/data-inspector) plugin (installed as a devDependency, see [Installation](#installation)), which generates a ready-to-run copy in your project under `gen/cap-data-inspector-ui`, pre-configured to talk to your running CAP Java server. Run the UI from that generated folder:
 
-1. **Ensure your CAP Java server is started** (in one terminal), so the OData service is available at `http://localhost:8080`:
+1. **Ensure your CAP Java server is started** in one terminal, so the OData service is available at `http://localhost:8080`:
 
    ```sh
    mvn spring-boot:run
    ```
 
-2. **Produce the UI** with the CDS build (in another terminal). This copies and configures the UI5 app into `gen/cap-data-inspector-ui`:
+2. **Produce the UI** with the CDS build in another terminal. This copies and configures the SAPUI5 app into `gen/cap-data-inspector-ui`:
 
    ```sh
    cds build
@@ -93,7 +98,7 @@ The SAPUI5 app runs as a standalone UI5 app that talks to this plugin's OData se
 
 > **Note:** The dev proxy in the generated `ui5.yaml` targets the CAP Java server at `http://localhost:8080`. If your server runs on a different port, adjust the proxy target in `gen/cap-data-inspector-ui/ui5.yaml`.
 
-> **Note:** Re-run `cds build` whenever you change the plugin configuration so the regenerated `gen/cap-data-inspector-ui` picks up your changes.
+> **Note:** Run `cds build` again whenever you change the plugin configuration so the regenerated `gen/cap-data-inspector-ui` picks up your changes.
 
 ### Excluding Entities and Elements
 
@@ -101,7 +106,7 @@ To hide entities or elements from the Data Inspector, annotate them with `@HideF
 
 **Example**
 
-Using `@HideFromDataInspector` annotation in the CDS entity definitions:
+Using the `@HideFromDataInspector` annotation in the CDS entity definitions:
 
 ```cds
 entity Foo {
@@ -122,7 +127,7 @@ entity Bar {
 
 The `Bar` entity is not revealed by the Data Inspector.
 
-## Setup for BTP
+## Setup for SAP BTP
 
 ### Prerequisites
 
@@ -133,7 +138,7 @@ The `Bar` entity is not revealed by the Data Inspector.
    npm install --save-dev @cap-js/data-inspector
    ```
 
-   Then add `"@cap-js/data-inspector": false` under `cds.requires` in your `.cdsrc.json` (or `package.json`) to avoid a duplicate `DataInspectorService` definition — see [Installation](#installation) for details.
+   Add `"@cap-js/data-inspector": false` under `cds.requires` in your `.cdsrc.json` or `package.json` file to avoid a duplicate `DataInspectorService` definition. For more information, see [Installation](#installation).
 
 3. Set up the `xsuaa` SAP BTP service for authorization.
 4. Optionally, use CAP Java's [audit logging](https://cap.cloud.sap/docs/java/auditlog) and the `auditlog` SAP BTP service for audit logging.
@@ -164,7 +169,7 @@ cds:
 
 > **Note:** The Data Inspector reads data only through the available CDS services, exposing data based on `xsuaa` scopes granted to the entities and the user. It doesn't implement own access control.
 
-For more on authorization, see [Authorization](https://github.com/cap-js/data-inspector#authorization) in the `@cap-js/data-inspector` README.
+For more information, see [Authorization](https://github.com/cap-js/data-inspector#authorization) in the `@cap-js/data-inspector` README.
 
 ### Audit Logging
 
@@ -176,7 +181,7 @@ The SAPUI5 app, the `cds build` plugin that produces and patches it, and all of 
 
 Refer to the following sections of the `@cap-js/data-inspector` README:
 
-- [CDS Build Plugin](https://github.com/cap-js/data-inspector#cds-build-plugin) — including [OData Service Base Path](https://github.com/cap-js/data-inspector#odata-service-base-path), [Custom Destination Name](https://github.com/cap-js/data-inspector#custom-destination-name), [sap.cloud.service Configuration](https://github.com/cap-js/data-inspector#sapcloudservice-configuration), [Authentication Type](https://github.com/cap-js/data-inspector#authentication-type), and [Local Server URL (ui5 serve proxy)](https://github.com/cap-js/data-inspector#local-server-url-ui5-serve-proxy).
+- [CDS Build Plugin](https://github.com/cap-js/data-inspector#cds-build-plugin) — including [OData Service Base Path](https://github.com/cap-js/data-inspector#odata-service-base-path), [Custom Destination Name](https://github.com/cap-js/data-inspector#custom-destination-name), [sap.cloud.service Configuration](https://github.com/cap-js/data-inspector#sapcloudservice-configuration), [Authentication Type](https://github.com/cap-js/data-inspector#authentication-type), and [Local Server URL (ui5 serve proxy)](https://github.com/cap-js/data-inspector#local-server-url-ui5-serve-proxy)
 - [MTA Deployment](https://github.com/cap-js/data-inspector#mta-deployment)
 - [@sap/html5-app-deployer](https://github.com/cap-js/data-inspector#saphtml5-app-deployer)
 - [Cloud Portal Service Configuration](https://github.com/cap-js/data-inspector#cloud-portal-service-configuration)
@@ -213,7 +218,7 @@ To quickly test and experience the plugin directly without a dependent project o
 
    The Data Inspector OData service is served at `http://localhost:8080/odata/v4/data-inspector/`.
 
-4. **Terminal 2 — build and serve the SAPUI5 app** (it runs as its own UI5 app against the service from Terminal 1):
+4. **Terminal 2 — build and serve the SAPUI5 app** (it runs as its own SAPUI5 app against the service from Terminal 1):
 
    ```sh
    cd test-app
@@ -223,7 +228,7 @@ To quickly test and experience the plugin directly without a dependent project o
    npm start              # starts ui5 serve, opens the app, proxies OData to localhost:8080
    ```
 
-   > **Note:** `npx cds build` uses the Node.js [`@cap-js/data-inspector`](https://github.com/cap-js/data-inspector) devDependency already declared in `test-app/package.json`. The generated dev proxy is pre-configured for the CAP Java server's port `8080`.
+   > **Note:** `npx cds build` uses the Node.js [`@cap-js/data-inspector`](https://github.com/cap-js/data-inspector) devDependency already declared in `test-app/package.json`. The generated dev proxy is preconfigured for the CAP Java server's port `8080`.
 
 5. Use the following credentials:
 
