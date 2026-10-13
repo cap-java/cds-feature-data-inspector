@@ -66,6 +66,21 @@ import java.util.regex.Pattern;
  */
 final class RFilterParser {
 
+  /**
+   * Maximum accepted length of a raw {@code r_filter} string. A generous bound that no legitimate
+   * UI-generated filter approaches; its purpose is to cap the work any single request can impose on
+   * the tokenizer and the per-clause regex matching (a denial-of-service / ReDoS safety guard,
+   * since {@code r_filter} is attacker-controllable input).
+   */
+  private static final int MAX_FILTER_LENGTH = 5000;
+
+  /**
+   * Maximum number of tokens produced from a single filter. Bounds the parser's work and, because
+   * each grouping parenthesis is its own token, implicitly bounds nesting depth well below any
+   * stack-overflow threshold - so no separate depth guard is required.
+   */
+  private static final int MAX_TOKENS = 300;
+
   private static final Pattern CONTAINS =
       Pattern.compile("contains\\(\\s*(\\w+)\\s*,\\s*'([^']*)'\\s*\\)", Pattern.CASE_INSENSITIVE);
   private static final Pattern STARTS_WITH =
@@ -105,8 +120,18 @@ final class RFilterParser {
    */
   static CqnPredicate parse(String filter, List<String> allowedElements) {
     if (filter == null || filter.isBlank()) return null;
+    if (filter.length() > MAX_FILTER_LENGTH) {
+      throw new FilterParseException(
+          "INVALID_R_FILTER_QUERY_PARAM",
+          "r_filter exceeds the maximum length of " + MAX_FILTER_LENGTH + " characters");
+    }
     List<String> tokens = tokenize(filter);
     if (tokens.isEmpty()) return null;
+    if (tokens.size() > MAX_TOKENS) {
+      throw new FilterParseException(
+          "INVALID_R_FILTER_QUERY_PARAM",
+          "r_filter exceeds the maximum of " + MAX_TOKENS + " tokens");
+    }
 
     Parser parser = new Parser(tokens, allowedElements);
     CqnPredicate predicate = parser.parseExpression();
