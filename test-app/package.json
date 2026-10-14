@@ -7,6 +7,6 @@
     "@cap-js/data-inspector": "2.0.0",
     "@cap-js/sqlite": "3.1.1",
     "@sap/cds": "10.1.1",
-    "@sap/cds-dk": "10.0.4"
+    "@sap/cds-dk": "10.1.0"
   }
 }
