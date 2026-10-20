@@ -5,8 +5,8 @@
   "description": "CDS-DK toolchain for the cds-feature-data-inspector test-app. The runtime is Java; this file exists only to feed `cds:npm ci` in the build.",
   "devDependencies": {
     "@cap-js/data-inspector": "2.0.0",
-    "@cap-js/sqlite": "3.1.1",
+    "@cap-js/sqlite": "3.1.2",
     "@sap/cds": "10.1.1",
-    "@sap/cds-dk": "10.0.4"
+    "@sap/cds-dk": "10.1.0"
   }
 }
