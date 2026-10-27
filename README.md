@@ -23,7 +23,7 @@ Add the plugin to your CAP Java project's `srv/pom.xml`:
 <dependency>
     <groupId>com.sap.cds</groupId>
     <artifactId>cds-feature-data-inspector</artifactId>
-    <version>1.0.0</version>
+    <version>0.0.1</version>
 </dependency>
 ```
 
