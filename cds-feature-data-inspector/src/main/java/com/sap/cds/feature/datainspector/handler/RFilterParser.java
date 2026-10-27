@@ -89,8 +89,9 @@ final class RFilterParser {
       Pattern.compile("endswith\\(\\s*(\\w+)\\s*,\\s*'([^']*)'\\s*\\)", Pattern.CASE_INSENSITIVE);
   private static final Pattern NULL_CHECK =
       Pattern.compile("(\\w+)\\s+(eq|ne)\\s+null", Pattern.CASE_INSENSITIVE);
+  // Possessive quantifiers (\w++, \s++) make this ReDoS-safe (SonarQube java:S5852).
   private static final Pattern COMPARISON =
-      Pattern.compile("(\\w+)\\s+(eq|ne|gt|ge|lt|le)\\s+(.+)", Pattern.CASE_INSENSITIVE);
+      Pattern.compile("(\\w++)\\s++(eq|ne|gt|ge|lt|le)\\s++(.+)", Pattern.CASE_INSENSITIVE);
 
   private RFilterParser() {}
 

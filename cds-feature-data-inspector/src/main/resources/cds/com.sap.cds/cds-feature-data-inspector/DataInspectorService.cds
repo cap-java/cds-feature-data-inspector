@@ -24,6 +24,7 @@ service DataInspectorService {
 
   @cds.persistence.skip: true
   @HideFromDataInspector
+  @readonly
   entity EntityDefinition {
     key name       : String;
         title      : String;
@@ -52,6 +53,7 @@ service DataInspectorService {
 
   @cds.persistence.skip: true
   @HideFromDataInspector
+  @readonly
   entity Data {
     key entityName : String;
     key recordKey  : String; // In the format: 'keyElementName=value', 'keyElement1Name=value&keyElement2Name=value', etc.
