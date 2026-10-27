@@ -4,6 +4,6 @@
   "private": true,
   "description": "CDS-DK toolchain for compiling the plugin's own CDS model at build time. The runtime is Java; this file exists only to feed `cds:npm ci`.",
   "devDependencies": {
-    "@sap/cds-dk": "10.0.4"
+    "@sap/cds-dk": "10.1.2"
   }
 }
