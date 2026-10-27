@@ -92,8 +92,8 @@
     <!-- Not managed by cds-services-bom; pinned explicitly. -->
     <assertj.version>3.27.7</assertj.version>
 
-    <!-- Not managed by cds-services-bom; keep aligned with CAP's jackson line to avoid a split-version classpath. -->
-    <jackson.jsr310.version>2.22.2</jackson.jsr310.version>
+    <!-- Explicit pin for jackson-datatype-jsr310 (used by the plugin's JSON handling). -->
+    <jackson.jsr310.version>2.22.4</jackson.jsr310.version>
 
     <!-- Skip Spotless `check` in normal builds; run `mvn spotless:apply`/`:check` on demand. -->
     <spotless.check.skip>true</spotless.check.skip>
