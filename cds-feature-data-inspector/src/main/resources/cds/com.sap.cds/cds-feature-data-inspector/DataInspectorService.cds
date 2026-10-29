@@ -42,7 +42,7 @@ service DataInspectorService {
   *
   * GET requests can be made in either of these two OData compliant ways only:
   * 1. To get a single record of an entity 'Foo' by its key 'Bar', use OData query by ID: /(entityName='Foo',recordKey='Bar=value')
-  *    For composite key 'ABC' and 'XYZ', use '&' as separator: /(entityName='Foo',recordKey='ABC=value&XYZ=value')
+  *    For composite key 'ABC' and 'XYZ', use '&amp;' as separator: /(entityName='Foo',recordKey='ABC=value&amp;XYZ=value')
   * 2. To get multiple records of an entity 'Foo', provide OData filter : $filter=entityName eq 'Foo'
   *
   * A singular GET request for all records of all entities is not supported.

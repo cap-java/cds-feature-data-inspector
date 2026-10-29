@@ -64,10 +64,10 @@ import org.slf4j.LoggerFactory;
  * Handles READ on DataInspectorService.Data.
  *
  * <p>GET requests can be made in either of these two OData compliant ways only: 1. To get a single
- * record of an entity 'Foo' by its key 'Bar', use OData query by ID:
- * /(entityName='Foo',recordKey='Bar=value') For composite key 'ABC' and 'XYZ', use '&' as
- * separator: /(entityName='Foo',recordKey='ABC=value&XYZ=value') 2. To get multiple records of an
- * entity 'Foo', provide OData filter : $filter=entityName eq 'Foo'
+ * record of an entity 'Foo' by its key 'Bar', use OData query by ID: {@code
+ * /(entityName='Foo',recordKey='Bar=value')} For composite key 'ABC' and 'XYZ', use {@code &} as
+ * separator: {@code /(entityName='Foo',recordKey='ABC=value&XYZ=value')} 2. To get multiple records
+ * of an entity 'Foo', provide OData filter : $filter=entityName eq 'Foo'
  *
  * <p>A singular GET request for all records of all entities is not supported.
  *
@@ -551,7 +551,7 @@ public class DataReader implements EventHandler {
   }
 
   /**
-   * Builds the recordKey from a data row: "ID=5" for single keys, "Country=DE&Code=EUR" for
+   * Builds the recordKey from a data row: "ID=5" for single keys, {@code "Country=DE&Code=EUR"} for
    * composite. Java port of DataReader._constructRecordKey().
    */
   private String buildRecordKey(List<String> keyElements, Map<String, Object> row) {
@@ -576,15 +576,15 @@ public class DataReader implements EventHandler {
   }
 
   /**
-   * Builds a typed CQN equality predicate from the recordKey (e.g. "key1=val1&key2=val2" → key1 =
-   * val1 AND key2 = val2). Values are passed via {@link CQL#val} as bound parameters, so characters
-   * that are significant in filter syntax (notably an apostrophe) are handled safely; CAP's query
-   * runtime converts each string value to the key element's actual type. The recordKey is assumed
-   * valid here (checked by {@link #validateRecordKey}).
+   * Builds a typed CQN equality predicate from the recordKey (e.g. {@code "key1=val1&key2=val2"} →
+   * key1 = val1 AND key2 = val2). Values are passed via {@link CQL#val} as bound parameters, so
+   * characters that are significant in filter syntax (notably an apostrophe) are handled safely;
+   * CAP's query runtime converts each string value to the key element's actual type. The recordKey
+   * is assumed valid here (checked by {@link #validateRecordKey}).
    *
-   * <p>Known limitation: the "key=value&…" format is ambiguous if a key value itself contains the
-   * delimiter characters {@code &} or {@code =}; such values cannot be represented. This does not
-   * affect the common key types (UUID, numeric, date, enum-like strings).
+   * <p>Known limitation: the {@code "key=value&…"} format is ambiguous if a key value itself
+   * contains the delimiter characters {@code &} or {@code =}; such values cannot be represented.
+   * This does not affect the common key types (UUID, numeric, date, enum-like strings).
    */
   private CqnPredicate buildPredicateFromRecordKey(String recordKey) {
     List<CqnPredicate> predicates = new ArrayList<>();
