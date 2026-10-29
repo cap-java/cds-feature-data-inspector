@@ -14,8 +14,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * Boot auto-configuration (see
  * cds-plugin/…/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports).
  *
- * <p>A downstream CAP Java application that consumes the plugin needs only: -
- * <dependency>cds-feature-data-inspector</dependency> - A @SpringBootApplication like this one
+ * <p>A downstream CAP Java application that consumes the plugin needs only: the {@code
+ * cds-feature-data-inspector} dependency and a {@code @SpringBootApplication} like this one
  *
  * <p>That's it. No @ComponentScan of the plugin package, no manual bean wiring.
  */
