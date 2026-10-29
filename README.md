@@ -39,7 +39,7 @@ To use the SAPUI5 app or `cds add data-inspector`, additionally install the Node
 npm install --save-dev @cap-js/data-inspector
 ```
 
-Then disable the Node.js plugin's CDS model contribution by adding `"@cap-js/data-inspector": false` under `cds.requires` in your host app's `.cdsrc.json` or the `cds` block in `package.json`:
+Then disable the Node.js plugin's CDS model contribution by adding `"@cap-js/data-inspector": false` under `requires` in the `.cdsrc.json` or in the `cds` block in `package.json`:
 
 ```json
 {
