@@ -240,12 +240,10 @@ To quickly test and experience the plugin directly without a dependent project o
 
 ## Minimum Versions
 
-| Component     | Minimum Version |
-| ------------- | --------------- |
-| CAP Java      | 4.9.0           |
-| Java          | 21              |
-| Maven         | 3.6.3           |
-| `@sap/cds-dk` | 9.x             |
+| Component | Minimum Version |
+| --------- | --------------- |
+| CAP Java  | 5.0.0           |
+| Java      | 21              |
 
 ## Security / Disclosure
 
